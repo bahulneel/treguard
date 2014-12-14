@@ -24,19 +24,30 @@
 (defn start-service!
   [service]
   (let [{:keys [name env chan-in chan-out]} service]
-    (go-loop [env (handle-start name env chan-out)]
-      (when-let [msg (<! chan-in)]
-        (let [env (handle-message name env msg chan-out)]
-          (recur env))))
-    service))
+    (println "Starting:" name)
+    (let [env (handle-start name env chan-out)]
+      (assoc service
+        :env env
+        :handler
+        (go-loop [env env]
+          (if-let [msg (<! chan-in)]
+            (do
+              (println "Handling:" msg)
+              (let [env (handle-message name env msg chan-out)]
+                (recur env)))
+            env))))))
 
 (defn stop-service!
   [service]
-  (let [{:keys [name env chan-in chan-out]} service]
+  (let [{:keys [name env chan-in chan-out handler]} service]
+    (println "Stopping:" name)
     (async/close! chan-in)
     (handle-stop name env)
-    (async/close! chan-out)
-    service))
+    (let [env (async/<!! handler)]
+      (async/close! chan-out)
+      (-> service
+          (dissoc :handler)
+          (assoc :env env)))))
 
 (defn send-service-msg!
   [service msg]
@@ -53,19 +64,28 @@
                 chan-in
                 chan-out))
 
+(defn add-service
+  [container service]
+  (let [name (:name service)]
+    (assoc-in container [:env :services name] service)))
+
 (defmethod handle-start ::service-container
   [_ env c-out]
-  (doseq [[name service] (:services env)]
-    (let [{:keys [chan-out]} service]
-      (async/pipe chan-out c-out false)
-      (start-service! service)))
-  env)
+  (reduce (fn [env [name service]]
+            (println "About to start: " name)
+            (let [{:keys [chan-out]} service]
+              (async/pipe chan-out c-out false)
+              (assoc-in env [:services name] (start-service! service))))
+          env
+          (:services env)))
 
 (defmethod handle-stop ::service-container
   [_ env]
-  (doseq [[_ service] (:services env)]
-    (stop-service! service))
-  env)
+  (reduce (fn [env [name service]]
+            (println "About to stop: " name)
+            (assoc-in env [:services name] (stop-service! service)))
+          env
+          (:services env)))
 
 (defmethod handle-message ::service-container
   [_ env msg chan-out]
