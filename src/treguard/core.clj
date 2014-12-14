@@ -87,6 +87,10 @@
           env
           (:services env)))
 
+(defn add-via
+  [msg id]
+  (update-in [:headers :via] (fnil conj #{}) id))
+
 (defmethod handle-message ::service-container
   [_ env msg chan-out]
   (let [destination (:destination msg)]

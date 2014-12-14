@@ -18,7 +18,7 @@
     (let [chan-in (async/chan)
           chan-out (async/chan 1)
           service (make-service ::echo nil chan-in chan-out)
-          msg (make-msg nil nil {:reply-to :me :msg "Hello World!"})
+          msg (make-msg nil {:reply-to :me :msg "Hello World!"})
           service (start-service! service)]
       (async/>!! chan-in msg)
       (stop-service! service)
@@ -31,7 +31,7 @@
     (let [chan-in (async/chan)
           chan-out (async/chan 1)
           echo-service (make-service ::echo nil (async/chan) (async/chan))
-          msg (make-msg nil ::echo {:reply-to :me :msg "Hello World!"})
+          msg (make-msg ::echo {:reply-to :me :msg "Hello World!"})
           service (-> (service-container ::id {} chan-in chan-out)
                       (add-service echo-service)
                       start-service!)]
