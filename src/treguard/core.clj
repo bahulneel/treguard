@@ -53,21 +53,21 @@
                 chan-in
                 chan-out))
 
-(defn handle-start ::service-container
+(defmethod handle-start ::service-container
   [_ env c-out]
   (doseq [[name service] (:services env)]
     (let [{:keys [chan-out]} service]
-      (async/pipe chan-out)
+      (async/pipe chan-out c-out false)
       (start-service! service)))
   env)
 
-(defn handle-stop ::service-container
+(defmethod handle-stop ::service-container
   [_ env]
   (doseq [[_ service] (:services env)]
     (stop-service! service))
   env)
 
-(defn handle-message ::service-container
+(defmethod handle-message ::service-container
   [_ env msg chan-out]
   (let [destination (:destination msg)]
     (if-let [chan-in (get-in env [:services destination :chan-in])]
