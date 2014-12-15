@@ -2902,10 +2902,9 @@ each node and pass the coordinates around in our messages.</p>
 
 <p>As overlay networks are most common in P2P (peer-to-peer) networks we
 will call our nodes peers.</p>
-</td><td class="codes"></td></tr><tr><td class="docs"><p>Each peer has an Id, 2 mailboxes (one for outbound messages and one
+</td><td class="codes"><pre class="brush: clojure">(defrecord Peer [id mail-in mail-out meta peers])</pre></td></tr><tr><td class="docs"><p>Each peer has an Id, 2 mailboxes (one for outbound messages and one
 for incomming massages), some meta-data and a collection of other
 peers it knows about.</p>
-</td><td class="codes"><pre class="brush: clojure">(defrecord Peer [id mail-in mail-out meta peers])</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn make-peer
   ([id mail-in mail-out]
      (make-peer id mail-in mail-out {}))
