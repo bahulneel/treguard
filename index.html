@@ -2932,7 +2932,7 @@ case we just deliver it to mail-in.</p>
     :put (:mail-in peer) m])</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn connected?
   [peer id]
-  (not (nil? (get-in peer [:peers id :mail-in]))))</pre></td></tr><tr><td class="docs"><p>The next simplest case is if we recieve a message about a peer we
+  (get-in peer [:peers id :meta :connected?]))</pre></td></tr><tr><td class="docs"><p>The next simplest case is if we recieve a message about a peer we
 already are connected to.</p>
 </td><td class="codes"><pre class="brush: clojure">(def direct-msg
   '[:process [:deliver m]
