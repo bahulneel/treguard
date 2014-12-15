@@ -31,26 +31,3 @@
 ;; Coordinates](http://en.wikipedia.org/wiki/Vivaldi_coordinates) to
 ;; each node and pass the coordinates around in our messages.
 (ns treguard.overlay)
-
-;; <sequence>
-;; Andrew->China: Says Hello
-;; Note right of China: China thinks\nabout it
-;; China-->Andrew: How are you?
-;; Andrew->>China: I am good thanks!
-;; </sequence>
-
-;; <flowchart>
-;; st=>start: Start
-;; e=>end
-;; op=>operation: My Operation
-;; cond=>condition: Yes or No?
-;; sub=>subroutine: My sub
-;; io=>inputoutput: Write result
-;; st->op->cond
-;; cond(yes)->sub->e
-;; cond(no,right)->io->op
-;; </flowchart>
-
-;; <graph>
-;; digraph { a -> b; }
-;; </graph>
