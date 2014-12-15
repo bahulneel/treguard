@@ -11,5 +11,6 @@
                             "js/raphael-min.js"
                             "js/flowchart-latest.js"
                             "js/sequence-diagram-min.js"
+                            "js/viz.js"
                             "js/jquery-2.1.1.min.js"
                             "js/main.js"]})
