@@ -3021,7 +3021,7 @@ acknowledged.</p>
   (assoc-in m [:meta :state] state))</pre></td></tr><tr><td class="docs"><p>When a message is acknowledged we can acknowledge the sender</p>
 </td><td class="codes"><pre class="brush: clojure">(def wait-ack
   '[:process [:wait-ack peer m]
-    :when (ack? peer m)
+    :when (ack? m)
     :ack peer m])</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn ack?
   [m]
