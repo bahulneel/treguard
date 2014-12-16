@@ -2904,7 +2904,7 @@ will call our nodes peers.</p>
 </td><td class="codes"><pre class="brush: clojure">(defrecord Peer [id mail-in mail-out meta peers])</pre></td></tr><tr><td class="docs"><p><graph>
 digraph {
 node [shape=record];
-peers [ label = "&lt;ps&gt; peers|{id1|&lt;p1&gt; peer1}|{id2|&lt;p1&gt; peer2}|..." ];
+peers [ label = "&lt;ps&gt; peers|{id1|&lt;p1&gt; peer1}|{id2|&lt;p2&gt; peer2}|..." ];
 peer [ label = "&lt;p&gt; peer|{id|mail-in|mail-out|&lt;m&gt; meta|&lt;ps&gt; peers}" ];
 meta [ label = "&lt;m&gt; meta|{k1|v1}|{k2|v2}|..." ];
 peer:m -> meta:m;
