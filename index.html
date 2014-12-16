@@ -3029,7 +3029,8 @@ message to be acknowledged.</p>
     :ack-msg peer m])</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn ack?
   [m]
-  (= :ack (get-in m [:meta :state])))</pre></td></tr><tr><td class="docs"><p>When a message is rejected we need to try to re-deliver it.</p>
+  (= :ack (get-in m [:meta :state])))</pre></td></tr><tr><td class="docs"><p>When a message is rejected we need to try to restart the delivery
+process.</p>
 </td><td class="codes"><pre class="brush: clojure">(def wait-reject
   '[:process [:wait-ack peer m]
     :when (reject? m)
