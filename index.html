@@ -2953,7 +2953,8 @@ in this case we just deliver it to ourselves.</p>
   [peer m]
   (= (:to m) (:id peer)))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(def remote? (complement local?))</pre></td></tr><tr><td class="docs"><p>The next simplest case is if we receive a message about a peer we
-already are connected to.</p>
+already are connected to. In this case we send it to the remote peer
+fir delivery.</p>
 </td><td class="codes"><pre class="brush: clojure">(def direct-msg
   '[:process [:route peer m]
     :let [id (:to m)
@@ -3002,8 +3003,8 @@ need to reject it as it's not routeable from our point of view.</p>
   '[:process [:send peer remote m]
     :when (nil? remote)
     :reject-msg peer m])</pre></td></tr><tr><td class="docs"><p>Otherwise we deliver the message to the remote peer, we also need to
-note that the message visited this peer, and wait for the message to
-be acknowledged.</p>
+note that the message visited this peer, then we wait for the message
+to be acknowledged.</p>
 </td><td class="codes"><pre class="brush: clojure">(def do-send
   '[:process [:send peer remote m]
     :when remote
