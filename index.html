@@ -2917,17 +2917,10 @@ and the mesage body.</p>
 
 <p><graph>
 digraph {
-graph [
-rankdir = "LR"
-];
-message [
-label = "message|{id|from|to|<m>meta|body}"
-shape = "record"
-];
-meta [
-label = "<m>meta|{{k1|v1}|{k2|v2}|...}"
-shape = "record"
-];
+node [shape=record];
+graph [ rankdir = "LR" ];
+message [ label = "message|{id|from|to|<m> meta|body}" ];
+meta [ label = "<m> meta|{{k1|v1}|{k2|v2}|...}" ];
 message:m -> meta:m;
 }
 </graph></p>
