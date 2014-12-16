@@ -2981,7 +2981,8 @@ that.</p>
         dest (get-in peer [:peers (:to m)])]
     (-&gt; peers
         (remove (partial visited? m))
-        (sort (partial distance peer dest)))))</pre></td></tr><tr><td class="docs">
+        (sort (partial distance peer dest))
+        first)))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn visited?
   [m peer]
   (let [visited (get-in m [:meta :visited])
