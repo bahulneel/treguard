@@ -3083,32 +3083,33 @@ mailbox.</p>
   (get-in m [:meta k]))</pre></td></tr><tr><td class="docs"><p>Alternatively we need to pass it to a remote peer. And wait for it to
 be acknowledged.</p>
 </td><td class="codes"><pre class="brush: clojure">(add-process system
-  '[:process [:deliver peer m]
-    :when (`remote? peer m)
-    :let [mail-in (:mail-in peer)
-          ttl 5000 ; FIXME: make this configurable
-          attempts 5
-          m (-&gt; m
-                (set-meta :timeout ttl)
-                (set-meta :attempts attempts))
-          timeout [:timeout ttl]]
-    :put mail-in m
-    :wait-deliver-ack peer m timeout])</pre></td></tr><tr><td class="docs"><p>If a message is ack'd we can cancel the timeout and drop the message</p>
+             '[:process [:deliver peer m]
+               :let [remote? (`remote? peer m)]
+               :when remote?
+               :let [mail-in (:mail-in peer)
+                     ttl 5000           ; FIXME: make this configurable
+                     attempts 5
+                     m (-&gt; m
+                           (set-meta :timeout ttl)
+                           (set-meta :attempts attempts))
+                     timeout [:timeout ttl]]
+               :put mail-in m
+               :wait-deliver-ack peer m timeout])</pre></td></tr><tr><td class="docs"><p>If a message is ack'd we can cancel the timeout and drop the message</p>
 </td><td class="codes"><pre class="brush: clojure">(add-process system
-  '[:process [:wait-deliver-ack peer m timeout]
-    :when (ack? m)
-    :cancel-timeout timeout])</pre></td></tr><tr><td class="docs"><p>If we timeout we can retry the message</p>
+             '[:process [:wait-deliver-ack peer m timeout]
+               :when (ack? m)
+               :cancel-timeout timeout])</pre></td></tr><tr><td class="docs"><p>If we timeout we can retry the message</p>
 </td><td class="codes"><pre class="brush: clojure">(add-process system
-  '[:process [:wait-deliver-ack peer m timeout]
-    :let [attempts (get-meta m :attempts)]
-    :when (and timeout attempts)
-    :let [m (set-meta m :attempts (dec attempts))]
-    :deliver peer m])</pre></td></tr><tr><td class="docs"><p>Otherwise we fail</p>
+             '[:process [:wait-deliver-ack peer m timeout]
+               :let [attempts (get-meta m :attempts)]
+               :when (and timeout attempts)
+               :let [m (set-meta m :attempts (dec attempts))]
+               :deliver peer m])</pre></td></tr><tr><td class="docs"><p>Otherwise we fail</p>
 </td><td class="codes"><pre class="brush: clojure">(add-process system
-  '[:process [:wait-deliver-ack peer m timeout]
-    :let [attempts (get-meta m :attempts)]
-    :when (and timeout (zero? attempts))
-    :fail {:err :timeout :message m :peer peer}])</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#treguard.utils.dot" name="treguard.utils.dot"><h1 class="project-name">treguard.utils.dot</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+             '[:process [:wait-deliver-ack peer m timeout]
+               :let [attempts (get-meta m :attempts)]
+               :when (and timeout (zero? attempts))
+               :fail {:err :timeout :message m :peer peer}])</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#treguard.utils.dot" name="treguard.utils.dot"><h1 class="project-name">treguard.utils.dot</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns treguard.utils.dot
   (:require [dorothy.core :as dot]))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn get-process-def
