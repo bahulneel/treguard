@@ -2908,7 +2908,6 @@ peers it knows about.</p>
 <p><graph>
 digraph {
 node [shape=record];
-graph [ rankdir = "LR" ];
 peer [ label = "peer|{id|mail-in|mail-out|&lt;m&gt; meta|peers}" ];
 meta [ label = "&lt;m&gt; meta|{{k1|v1}|{k2|v2}|...}" ];
 peer:m -> meta:m;
@@ -2928,7 +2927,6 @@ and the mesage body.</p>
 <p><graph>
 digraph {
 node [shape=record];
-graph [ rankdir = "LR" ];
 message [ label = "message|{id|from|to|&lt;m&gt; meta|body}" ];
 meta [ label = "&lt;m&gt; meta|{{k1|v1}|{k2|v2}|...}" ];
 message:m -> meta:m;
