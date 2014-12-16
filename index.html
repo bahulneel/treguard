@@ -2917,12 +2917,11 @@ and the mesage body.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn make-message
   [id from to meta body]
   (-&gt;Message id from to meta body))</pre></td></tr><tr><td class="docs"><h2>Delivering a message</h2>
-</td><td class="codes"></td></tr><tr><td class="docs"><p>When a message arrives on mail-out we want to try and deliver it,
-then loop around.</p>
+</td><td class="codes"></td></tr><tr><td class="docs"><p>When a message arrives on mail-out we want to try and deliver it.</p>
 </td><td class="codes"><pre class="brush: clojure">(def new-message
   '[:process [:new-message peer]
     :let [m [:get (:mail-out peer)]]
-    [:deliver peer m]])</pre></td></tr><tr><td class="docs"><p>In the simplest case a message arrives which is addressed to youself,
+    :deliver peer m])</pre></td></tr><tr><td class="docs"><p>In the simplest case a message arrives which is addressed to youself,
 in this case we just deliver it to mail-in.</p>
 </td><td class="codes"><pre class="brush: clojure">(def local-msg
   '[:process [:deliver peer m]
