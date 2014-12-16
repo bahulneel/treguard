@@ -2919,9 +2919,9 @@ and the mesage body.</p>
 digraph {
 node [shape=record];
 graph [ rankdir = "LR" ];
-message [ label = "message|{id|from|to|<f0> meta|body}" ];
-meta [ label = "<f0> meta|{{k1|v1}|{k2|v2}|...}" ];
-message:f0 -> meta:f0;
+message [ label = "message|{id|from|to|<m> meta|body}" ];
+meta [ label = "<m> meta|{{k1|v1}|{k2|v2}|...}" ];
+message:m -> meta:m;
 }
 </graph></p>
 </td><td class="codes"><pre class="brush: clojure">(defn make-message
