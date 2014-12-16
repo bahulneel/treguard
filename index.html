@@ -2915,7 +2915,7 @@ peers it knows about.</p>
 </td><td class="codes"><pre class="brush: clojure">(defrecord Message [id from to meta body])</pre></td></tr><tr><td class="docs"><p>Each message has a message id, from address, to address, some meta-data,
 and the mesage body.</p>
 
-<script type="graphviz">
+<pre type="graphviz">
 digraph {
 node [shape=record];
 graph [ rankdir = "LR" ];
@@ -2923,7 +2923,7 @@ message [ label = "message|{id|from|to|<m> meta|body}" ];
 meta [ label = "<m> meta|{{k1|v1}|{k2|v2}|...}" ];
 message:m -> meta:m;
 }
-</script>
+</pre>
 </td><td class="codes"><pre class="brush: clojure">(defn make-message
   [id from to meta body]
   (-&gt;Message id from to meta body))</pre></td></tr><tr><td class="docs"><h2>Delivering a message</h2>
