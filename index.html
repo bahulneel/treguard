@@ -3093,7 +3093,7 @@ be acknowledged.</p>
     :let [attempts (get-meta m :attempts)]
     :when (and timeout attempts)
     :let [m (set-meta m :attempts (dec attempts))]
-    :forward [:forward peer m]])</pre></td></tr><tr><td class="docs"><p>Otherwise we fail</p>
+    :forward peer m])</pre></td></tr><tr><td class="docs"><p>Otherwise we fail</p>
 </td><td class="codes"><pre class="brush: clojure">(def forward-ack
   '[:process [:wait-forward-ack peer m timeout]
     :let [attempts (get-meta m :attempts)]
