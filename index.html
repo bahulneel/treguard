@@ -3084,8 +3084,6 @@ be acknowledged.</p>
           timeout [:timeout (get-meta m :timeout)]] ; FIXME: make this configurable
     :put mail-in m
     :wait-forward-ack peer m timeout])</pre></td></tr><tr><td class="docs"><p>If a message is ack'd we can cancel the timeout and drop the message</p>
-
-<p>TODO: At this point we should update statistics</p>
 </td><td class="codes"><pre class="brush: clojure">(def forward-ack
   '[:process [:wait-forward-ack peer m timeout]
     :when (ack? m)
