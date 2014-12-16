@@ -3047,7 +3047,7 @@ address with the same message id as the message.</p>
           msg (make-message msg-id peer-id reply-to {} :ack)
           mail-in (get-in peer [:peers peer-id :mail-in])]
     :put mail-in msg])</pre></td></tr><tr><td class="docs"><p>Rejecting a message is the same as an ack but with a body of :reject
-and the via set of the rejected message.</p>
+and the via set from the rejected message.</p>
 </td><td class="codes"><pre class="brush: clojure">(def reject-msg
   '[:process [:reject-msg peer m]
     :let [reply-to (:reply-to m)
