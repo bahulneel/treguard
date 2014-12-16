@@ -3002,8 +3002,8 @@ need to reject it as it's not deliverable from our point of view.</p>
   '[:process [:send peer remote m]
     :when (nil? remote)
     :reject-msg peer m])</pre></td></tr><tr><td class="docs"><p>Otherwise we get the peer's in-box and give it the message, we also
-need to note that we visited the peer, and wait for the message to be
-acknowledged.</p>
+need to note that the message visited this peer, and wait for the
+message to be acknowledged.</p>
 </td><td class="codes"><pre class="brush: clojure">(def do-send
   '[:process [:send peer remote m]
     :when remote
