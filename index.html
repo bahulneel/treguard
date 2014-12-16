@@ -3030,7 +3030,7 @@ to be acknowledged.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn ack?
   [m]
   (= :ack (get-in m [:meta :state])))</pre></td></tr><tr><td class="docs"><p>When a message is rejected we need to try to re-route it to someone
-else process.</p>
+else.</p>
 </td><td class="codes"><pre class="brush: clojure">(def wait-reject
   '[:process [:wait-ack peer m]
     :when (reject? m)
@@ -3038,7 +3038,8 @@ else process.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn reject?
   [m]
   (= :reject (get-in m [:meta :state])))</pre></td></tr><tr><td class="docs"><p>Acking a message just involves sending a message to the reply-to
-address with the same message id as the message.</p>
+address with the same message id as original message and <code>:ack</code> in
+the body</p>
 </td><td class="codes"><pre class="brush: clojure">(def ack-msg
   '[:process [:ack-msg peer m]
     :let [reply-to (:reply-to m)
