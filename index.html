@@ -3080,11 +3080,12 @@ be acknowledged.</p>
   '[:process [:deliver peer m]
     :when (`remote? peer m)
     :let [mail-in (:mail-in peer)
-          t 5000
+          ttl 5000 ; FIXME: make this configurable
+          attempts 5
           m (-&gt; m
-                (set-meta :timeout t)
-                (set-meta :attempts 5))
-          timeout [:timeout t]] ; FIXME: make this configurable
+                (set-meta :timeout ttl)
+                (set-meta :attempts attempts))
+          timeout [:timeout ttl]]
     :put mail-in m
     :wait-deliver-ack peer m timeout])</pre></td></tr><tr><td class="docs"><p>If a message is ack'd we can cancel the timeout and drop the message</p>
 </td><td class="codes"><pre class="brush: clojure">(def deliver-ack
