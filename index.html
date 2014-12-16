@@ -2905,12 +2905,11 @@ will call our nodes peers.</p>
 digraph {
 node [shape=record];
 peer [ label = "&lt;p&gt; peer|{id|mail-in|mail-out|&lt;m&gt; meta|&lt;ps&gt; peers}" ];
-peers [ label = "&lt;ps&gt; peers|{id1|&lt;p1&gt; peer1}|{id2|&lt;p2&gt; peer2}|..." ];
+peers [ label = "&lt;ps&gt; peers|{id1|&lt;p1&gt; peer1}|..." ];
 meta [ label = "&lt;m&gt; meta|{k1|v1}|{k2|v2}|..." ];
 peer:m -> meta:m;
 peer:ps -> peers:ps;
-peers:p1 -> peer;
-peers:p2 -> peer;
+peers:p1 -> peer:p;
 }
 </graph></p>
 
