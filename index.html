@@ -2912,7 +2912,7 @@ peers it knows about.</p>
   ([id mail-in mail-out meta peers]
      (-&gt;Peer id mail-in mail-out meta peers)))</pre></td></tr><tr><td class="docs"><h2>Messages</h2>
 </td><td class="codes"></td></tr><tr><td class="docs"><p>A message is something we want to be delivered to a peer.</p>
-</td><td class="codes"><pre class="brush: clojure">(defrecord Message [id from to meta body])</pre></td></tr><tr><td class="docs"><p>Each message has a message id, a from id, a to id, some meta-data,
+</td><td class="codes"><pre class="brush: clojure">(defrecord Message [id from to meta body])</pre></td></tr><tr><td class="docs"><p>Each message has a message id, from address, to address, some meta-data,
 and the mesage body.</p>
 
 <p><graph>
@@ -2920,11 +2920,15 @@ digraph {
 graph [
 rankdir = "LR"
 ];
-"message" [
-label = "id|from addr|to addr|meta|body"
+message [
+label = "message|{id|from|to|<m>meta|body}"
 shape = "record"
 ];
+meta [
+label = "meta|{{k1|v1}|{k2|v2}|...}"
+shape = "record"
 }
+message:meta -> meta
 </graph></p>
 </td><td class="codes"><pre class="brush: clojure">(defn make-message
   [id from to meta body]
