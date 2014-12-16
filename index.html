@@ -3001,7 +3001,7 @@ pass it to the peer.</p>
 need to reject it as it's not routeable from our point of view.</p>
 </td><td class="codes"><pre class="brush: clojure">(def reject-send
   '[:process [:send peer remote m]
-    :when (nil? remote)
+    :when (not remote)
     :reject-msg peer m])</pre></td></tr><tr><td class="docs"><p>Otherwise we deliver the message to the remote peer, we also need to
 note that the message visited this peer, then we wait for the message
 to be acknowledged.</p>
@@ -3029,8 +3029,8 @@ to be acknowledged.</p>
     :ack-msg peer m])</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn ack?
   [m]
-  (= :ack (get-in m [:meta :state])))</pre></td></tr><tr><td class="docs"><p>When a message is rejected we need to try to restart the routey
-process.</p>
+  (= :ack (get-in m [:meta :state])))</pre></td></tr><tr><td class="docs"><p>When a message is rejected we need to try to re-route it to someone
+else process.</p>
 </td><td class="codes"><pre class="brush: clojure">(def wait-reject
   '[:process [:wait-ack peer m]
     :when (reject? m)
