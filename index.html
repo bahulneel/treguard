@@ -3011,8 +3011,8 @@ be acknowledged.</p>
                 (reply-to peer)
                 (via peer)
                 (state :in-flight))]
-    :let [m  [:forward remote m]]
-    :test-ack peer m])</pre></td></tr><tr><td class="docs">
+    :forward remote m
+    :wait-ack peer m])</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn reply-to
   [m peer]
   (update-in m [:meta :reply-to] (:id peer)))</pre></td></tr><tr><td class="docs">
