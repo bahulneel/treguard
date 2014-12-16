@@ -2943,19 +2943,19 @@ and the message body.</p>
 </td><td class="codes"><pre class="brush: clojure">(def new-message
   '[:process [:new-message peer]
     :let [m [:get (:mail-out peer)]]
-    :deliver peer m])</pre></td></tr><tr><td class="docs"><p>In the simplest case a message arrives which is addressed to youself,
-in this case we just forward it to ourselves.</p>
+    :route peer m])</pre></td></tr><tr><td class="docs"><p>In the simplest case a message arrives which is addressed to youself,
+in this case we just deliver it to ourselves.</p>
 </td><td class="codes"><pre class="brush: clojure">(def local-msg
-  '[:process [:deliver peer m]
+  '[:process [:route peer m]
     :when (`local? peer m)
-    :forward peer m])</pre></td></tr><tr><td class="docs">
+    :deliver peer m])</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn local?
   [peer m]
   (= (:to m) (:id peer)))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(def remote? (complement local?))</pre></td></tr><tr><td class="docs"><p>The next simplest case is if we receive a message about a peer we
 already are connected to.</p>
 </td><td class="codes"><pre class="brush: clojure">(def direct-msg
-  '[:process [:deliver peer m]
+  '[:process [:route peer m]
     :let [id (:to m)
           remote? (`remote? peer m)
           connected? (`connected? id)]
@@ -2968,7 +2968,7 @@ already are connected to.</p>
 connected peer. In this case we must select one and try to send it to
 that.</p>
 </td><td class="codes"><pre class="brush: clojure">(def indirect-msg
-  '[:process [:deliver peer m]
+  '[:process [:route peer m]
     :let [id (:to m)
           remote? (not (`local? peer m))
           connected? (`connected? id)]
@@ -2997,11 +2997,11 @@ that.</p>
 </td><td class="codes"></td></tr><tr><td class="docs"><p>Now that we have decided who to send out message to we now need to
 pass it to the peer.</p>
 </td><td class="codes"></td></tr><tr><td class="docs"><p>If for some reason we could not find a peer to send the message to we
-need to reject it as it's not deliverable from our point of view.</p>
+need to reject it as it's not routeable from our point of view.</p>
 </td><td class="codes"><pre class="brush: clojure">(def reject-send
   '[:process [:send peer remote m]
     :when (nil? remote)
-    :reject-msg peer m])</pre></td></tr><tr><td class="docs"><p>Otherwise we forward the message to the remote peer, we also need to
+    :reject-msg peer m])</pre></td></tr><tr><td class="docs"><p>Otherwise we deliver the message to the remote peer, we also need to
 note that the message visited this peer, and wait for the message to
 be acknowledged.</p>
 </td><td class="codes"><pre class="brush: clojure">(def do-send
@@ -3011,7 +3011,7 @@ be acknowledged.</p>
                 (reply-to peer)
                 (via peer)
                 (state :in-flight))]
-    :forward remote m
+    :deliver remote m
     :wait-ack peer m])</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn reply-to
   [m peer]
@@ -3028,12 +3028,12 @@ be acknowledged.</p>
     :ack-msg peer m])</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn ack?
   [m]
-  (= :ack (get-in m [:meta :state])))</pre></td></tr><tr><td class="docs"><p>When a message is rejected we need to try to restart the delivery
+  (= :ack (get-in m [:meta :state])))</pre></td></tr><tr><td class="docs"><p>When a message is rejected we need to try to restart the routey
 process.</p>
 </td><td class="codes"><pre class="brush: clojure">(def wait-reject
   '[:process [:wait-ack peer m]
     :when (reject? m)
-    :deliver peer m])</pre></td></tr><tr><td class="docs">
+    :route peer m])</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn reject?
   [m]
   (= :reject (get-in m [:meta :state])))</pre></td></tr><tr><td class="docs"><p>Acking a message just involves sending a message to the reply-to
@@ -3045,7 +3045,7 @@ address with the same message id as the message.</p>
           peer-id (:id peer)
           msg (make-message msg-id peer-id reply-to {} :ack)
           remote (get-in peer [:peers peer-id])]
-    :forward mail-in msg])</pre></td></tr><tr><td class="docs"><p>Rejecting a message is the same as an ack but with a body of :reject
+    :deliver mail-in msg])</pre></td></tr><tr><td class="docs"><p>Rejecting a message is the same as an ack but with a body of :reject
 and the via set from the rejected message.</p>
 </td><td class="codes"><pre class="brush: clojure">(def reject-msg
   '[:process [:reject-msg peer m]
@@ -3055,15 +3055,15 @@ and the via set from the rejected message.</p>
           meta (select-keys (:meta m) [:via])
           msg (make-message msg-id peer-id reply-to meta :reject)
           remote (get-in peer [:peers peer-id])]
-    :forward remote msg])</pre></td></tr><tr><td class="docs"><h2>Forwarding messages</h2>
-</td><td class="codes"></td></tr><tr><td class="docs"><p>Message forwarding if the act of passing messages between peers this
+    :deliver remote msg])</pre></td></tr><tr><td class="docs"><h2>Forwarding messages</h2>
+</td><td class="codes"></td></tr><tr><td class="docs"><p>Message delivering if the act of passing messages between peers this
 is distinct from sending a message as we only need to gaurentee that
 the message arrived at the peer.</p>
-</td><td class="codes"></td></tr><tr><td class="docs"><p>Again we have the simple case where we wish to forward the message to
+</td><td class="codes"></td></tr><tr><td class="docs"><p>Again we have the simple case where we wish to deliver the message to
 ourselves. In this case we just put the message on our incomming
 mailbox.</p>
-</td><td class="codes"><pre class="brush: clojure">(def local-forward
-  '[:process [:forward peer m]
+</td><td class="codes"><pre class="brush: clojure">(def local-deliver
+  '[:process [:deliver peer m]
     :when (`local? peer m)
     :let [mail-in (:mail-in peer)
           m (-&gt; m
@@ -3077,25 +3077,25 @@ mailbox.</p>
   [m k]
   (get-in m [:meta k]))</pre></td></tr><tr><td class="docs"><p>Alternatively we need to pass it to a remote peer. And wait for it to
 be acknowledged.</p>
-</td><td class="codes"><pre class="brush: clojure">(def remote-forward
-  '[:process [:forward peer m]
+</td><td class="codes"><pre class="brush: clojure">(def remote-deliver
+  '[:process [:deliver peer m]
     :when (`remote? peer m)
     :let [mail-in (:mail-in peer)
           timeout [:timeout (get-meta m :timeout)]] ; FIXME: make this configurable
     :put mail-in m
-    :wait-forward-ack peer m timeout])</pre></td></tr><tr><td class="docs"><p>If a message is ack'd we can cancel the timeout and drop the message</p>
-</td><td class="codes"><pre class="brush: clojure">(def forward-ack
-  '[:process [:wait-forward-ack peer m timeout]
+    :wait-deliver-ack peer m timeout])</pre></td></tr><tr><td class="docs"><p>If a message is ack'd we can cancel the timeout and drop the message</p>
+</td><td class="codes"><pre class="brush: clojure">(def deliver-ack
+  '[:process [:wait-deliver-ack peer m timeout]
     :when (ack? m)
     :cancel-timeout timeout])</pre></td></tr><tr><td class="docs"><p>If we timeout we can retry the message</p>
-</td><td class="codes"><pre class="brush: clojure">(def forward-ack
-  '[:process [:wait-forward-ack peer m timeout]
+</td><td class="codes"><pre class="brush: clojure">(def deliver-ack
+  '[:process [:wait-deliver-ack peer m timeout]
     :let [attempts (get-meta m :attempts)]
     :when (and timeout attempts)
     :let [m (set-meta m :attempts (dec attempts))]
-    :forward peer m])</pre></td></tr><tr><td class="docs"><p>Otherwise we fail</p>
-</td><td class="codes"><pre class="brush: clojure">(def forward-ack
-  '[:process [:wait-forward-ack peer m timeout]
+    :deliver peer m])</pre></td></tr><tr><td class="docs"><p>Otherwise we fail</p>
+</td><td class="codes"><pre class="brush: clojure">(def deliver-ack
+  '[:process [:wait-deliver-ack peer m timeout]
     :let [attempts (get-meta m :attempts)]
     :when (and timeout (zero? attempts))
     :fail {:err :timeout :message m :peer peer}])</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr></table><div class="footer">Generated by <a href="https://github.com/gdeer81/marginalia">Marginalia</a>.&nbsp;&nbsp;Syntax highlighting provided by Alex Gorbatchev's <a href="http://alexgorbatchev.com/SyntaxHighlighter/">SyntaxHighlighter</a><div id="floating-toc"><ul><li class="floating-toc-li" id="floating-toc_treguard.overlay">treguard.overlay</li></ul></div></div><script type="text/javascript">SyntaxHighlighter.defaults['gutter'] = false;
