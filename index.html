@@ -2928,9 +2928,10 @@ and the mesage body.</p>
 digraph {
 node [shape=record];
 message [ label = "message|{id|from|to|&lt;m&gt; meta|&lt;b&gt; body}" ];
-meta [ label = "&lt;m&gt; meta|{{k1|v1}|{k2|v2}|...}" ];
-body [ label = "&lt;b&gt; body|...";
-message:m -> meta:m;
+meta [ label = "meta|{{k1|v1}|{k2|v2}|...}" ];
+body [ label = "body|...";
+message:m -> meta;
+message:b -> body;
 }
 </graph></p>
 </td><td class="codes"><pre class="brush: clojure">(defn make-message
