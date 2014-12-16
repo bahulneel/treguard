@@ -2968,7 +2968,7 @@ connected peer. In this case we must select one and try to send it to
 that.</p>
 </td><td class="codes"><pre class="brush: clojure">(def indirect-msg
   '[:process [:deliver peer m]
-    :let [id (:id m)
+    :let [id (:to m)
           remote? (not (`local? peer m))
           connected? (`connected? id)]
     :when (and remote? (not connected?))
@@ -2980,6 +2980,8 @@ that.</p>
   (let [peers (:peers peer)
         dest (get-in peer [:peers (:to m)])]
     (-&gt; peers
+        vals
+        (filter #(get-in % [:meta :connected?]))
         (remove (partial visited? m))
         (sort (partial distance peer dest))
         first)))</pre></td></tr><tr><td class="docs">
