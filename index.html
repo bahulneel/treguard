@@ -2922,8 +2922,7 @@ then loop around.</p>
 </td><td class="codes"><pre class="brush: clojure">(def new-message
   '[:process [:new-message peer]
     :let [m [:get (:mail-out peer)]]
-    [:fork [:deliver peer m]]
-    :new-message peer])</pre></td></tr><tr><td class="docs"><p>In the simplest case a message arrives which is addressed to youself,
+    [:deliver peer m]])</pre></td></tr><tr><td class="docs"><p>In the simplest case a message arrives which is addressed to youself,
 in this case we just deliver it to mail-in.</p>
 </td><td class="codes"><pre class="brush: clojure">(def local-msg
   '[:process [:deliver peer m]
