@@ -2944,7 +2944,8 @@ and the message body.</p>
   [id from to meta body]
   (-&gt;Message id from to meta body))</pre></td></tr><tr><td class="docs"><h2>The process</h2>
 
-<p>digraph {
+<p><graph>
+digraph {
 "new-message" [label="new-message(peer)"];
 route [label="route(peer,m)"];
 send [label="send(peer,remote,m)"];
@@ -2972,7 +2973,8 @@ deliver -> "wait-deliver-ack" [label="remote?"];
 deliver -> put [label="local?"];
 deliver -> put [label="remote?"];
 "wait-deliver-ack" -> fail [label="(and timeout (zero? attempts))"];
-}</p>
+}
+</graph></p>
 </td><td class="codes"></td></tr><tr><td class="docs"><h2>Routing a message</h2>
 </td><td class="codes"></td></tr><tr><td class="docs"><p>When a message arrives on mail-out we want to try and route it.</p>
 </td><td class="codes"><pre class="brush: clojure">(add-process system
