@@ -3047,8 +3047,8 @@ the body</p>
           peer-id (:id peer)
           msg (make-message msg-id peer-id reply-to {} :ack)
           remote (get-in peer [:peers peer-id])]
-    :deliver mail-in msg])</pre></td></tr><tr><td class="docs"><p>Rejecting a message is the same as an ack but with a body of :reject
-and the via set from the rejected message.</p>
+    :deliver mail-in msg])</pre></td></tr><tr><td class="docs"><p>Rejecting a message is the same as an ack but with a body of
+<code>:reject</code> and the via set from the rejected message.</p>
 </td><td class="codes"><pre class="brush: clojure">(def reject-msg
   '[:process [:reject-msg peer m]
     :let [reply-to (:reply-to m)
@@ -3057,8 +3057,8 @@ and the via set from the rejected message.</p>
           meta (select-keys (:meta m) [:via])
           msg (make-message msg-id peer-id reply-to meta :reject)
           remote (get-in peer [:peers peer-id])]
-    :deliver remote msg])</pre></td></tr><tr><td class="docs"><h2>Forwarding messages</h2>
-</td><td class="codes"></td></tr><tr><td class="docs"><p>Message delivering if the act of passing messages between peers this
+    :deliver remote msg])</pre></td></tr><tr><td class="docs"><h2>Delivering messages</h2>
+</td><td class="codes"></td></tr><tr><td class="docs"><p>Message delivery is the act of passing messages between peers this
 is distinct from sending a message as we only need to gaurentee that
 the message arrived at the peer.</p>
 </td><td class="codes"></td></tr><tr><td class="docs"><p>Again we have the simple case where we wish to deliver the message to
