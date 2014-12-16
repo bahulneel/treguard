@@ -2938,8 +2938,8 @@ message:b -> body:b;
 and the message body.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn make-message
   [id from to meta body]
-  (-&gt;Message id from to meta body))</pre></td></tr><tr><td class="docs"><h2>Delivering a message</h2>
-</td><td class="codes"></td></tr><tr><td class="docs"><p>When a message arrives on mail-out we want to try and deliver it.</p>
+  (-&gt;Message id from to meta body))</pre></td></tr><tr><td class="docs"><h2>Routing a message</h2>
+</td><td class="codes"></td></tr><tr><td class="docs"><p>When a message arrives on mail-out we want to try and route it.</p>
 </td><td class="codes"><pre class="brush: clojure">(def new-message
   '[:process [:new-message peer]
     :let [m [:get (:mail-out peer)]]
