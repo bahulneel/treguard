@@ -2915,15 +2915,15 @@ peers it knows about.</p>
 </td><td class="codes"><pre class="brush: clojure">(defrecord Message [id from to meta body])</pre></td></tr><tr><td class="docs"><p>Each message has a message id, from address, to address, some meta-data,
 and the mesage body.</p>
 
-<pre type="graphviz">
+<p><graph>
 digraph {
 node [shape=record];
 graph [ rankdir = "LR" ];
-message [ label = "message|{id|from|to|<m> meta|body}" ];
-meta [ label = "<m> meta|{{k1|v1}|{k2|v2}|...}" ];
+message [ label = "message|{id|from|to|&lt;m&amp;gt meta|body}" ];
+meta [ label = "&lt;m&gt; meta|{{k1|v1}|{k2|v2}|...}" ];
 message:m -> meta:m;
 }
-</pre>
+</graph></p>
 </td><td class="codes"><pre class="brush: clojure">(defn make-message
   [id from to meta body]
   (-&gt;Message id from to meta body))</pre></td></tr><tr><td class="docs"><h2>Delivering a message</h2>
