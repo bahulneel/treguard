@@ -2903,6 +2903,7 @@ each node and pass the coordinates around in our messages.</p>
 will call our nodes peers.</p>
 </td><td class="codes"><pre class="brush: clojure">(defrecord Peer [id mail-in mail-out meta peers])</pre></td></tr><tr><td class="docs"><p><graph>
 digraph {
+graph [ rankdir = "LR" ];
 node [shape=record];
 peer [ label = "&lt;p&gt; peer|{id|mail-in|mail-out|&lt;m&gt; meta|&lt;ps&gt; peers}" ];
 peers [ label = "&lt;ps&gt; peers|{id1|&lt;p1&gt; peer1}|{id2|&lt;p2&gt; peer2}|..." ];
