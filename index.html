@@ -2912,6 +2912,7 @@ peer [ label = "peer|{id|mail-in|mail-out|&lt;m&gt; meta|&lt;p&gt; peers}" ];
 peers [ label = "&lt;p&gt; peers|{id1|peer1}|{id2|peer2}|..."];
 meta [ label = "&lt;m&gt; meta|{{k1|v1}|{k2|v2}|...}" ];
 peer:m -> meta:m;
+peer:p -> peers:p;
 }
 </graph></p>
 </td><td class="codes"><pre class="brush: clojure">(defn make-peer
