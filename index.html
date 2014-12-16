@@ -3067,10 +3067,7 @@ mailbox.</p>
 </td><td class="codes"><pre class="brush: clojure">(def local-deliver
   '[:process [:deliver peer m]
     :when (`local? peer m)
-    :let [mail-in (:mail-in peer)
-          m (-&gt; m
-                (set-meta :timeout 5000)
-                (set-meta :attempts 5))]
+    :let [mail-in (:mail-in peer)]
     :put mail-in m])</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn set-meta
   ([m k v]
@@ -3083,7 +3080,11 @@ be acknowledged.</p>
   '[:process [:deliver peer m]
     :when (`remote? peer m)
     :let [mail-in (:mail-in peer)
-          timeout [:timeout (get-meta m :timeout)]] ; FIXME: make this configurable
+          t 5000
+          m (-&gt; m
+                (set-meta :timeout t)
+                (set-meta :attempts 5))
+          timeout [:timeout t]] ; FIXME: make this configurable
     :put mail-in m
     :wait-deliver-ack peer m timeout])</pre></td></tr><tr><td class="docs"><p>If a message is ack'd we can cancel the timeout and drop the message</p>
 </td><td class="codes"><pre class="brush: clojure">(def deliver-ack
