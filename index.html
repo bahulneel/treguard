@@ -2948,8 +2948,7 @@ in this case we just deliver it to mail-in.</p>
 </td><td class="codes"><pre class="brush: clojure">(def local-msg
   '[:process [:deliver peer m]
     :when (`local? peer m)
-    :let [mail-in (:mail-in peer)]
-    :put mail-in m])</pre></td></tr><tr><td class="docs">
+    :forward peer m])</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn local?
   [peer m]
   (= (:to m) (:id peer)))</pre></td></tr><tr><td class="docs"><p>The next simplest case is if we receive a message about a peer we
