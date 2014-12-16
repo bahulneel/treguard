@@ -2913,7 +2913,7 @@ peer:ps -> peers:ps;
 </graph></p>
 
 <p>Each peer has an id, 2 mailboxes (one for outbound messages and one
-for incomming massages), some meta-data and a collection of other
+for incoming massages), some meta-data and a collection of other
 peers it knows about.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn make-peer
   ([id mail-in mail-out]
@@ -2935,7 +2935,7 @@ message:b -> body:b;
 </graph></p>
 
 <p>Each message has a message id, from address, to address, some meta-data,
-and the mesage body.</p>
+and the message body.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn make-message
   [id from to meta body]
   (-&gt;Message id from to meta body))</pre></td></tr><tr><td class="docs"><h2>Delivering a message</h2>
@@ -2952,7 +2952,7 @@ in this case we just deliver it to mail-in.</p>
     :put mail-in m])</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn local?
   [peer m]
-  (= (:to m) (:id peer)))</pre></td></tr><tr><td class="docs"><p>The next simplest case is if we recieve a message about a peer we
+  (= (:to m) (:id peer)))</pre></td></tr><tr><td class="docs"><p>The next simplest case is if we receive a message about a peer we
 already are connected to.</p>
 </td><td class="codes"><pre class="brush: clojure">(def direct-msg
   '[:process [:deliver peer m]
@@ -2975,7 +2975,7 @@ that.</p>
     :when (and remote? (not connected?))
     :let [remote (select-nearest peer m)]
     :send peer remote m])</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(declare visited? distance)</pre></td></tr><tr><td class="docs"><p>The nearest peer is the closest conncted peer that we have not yet visited.</p>
+</td><td class="codes"><pre class="brush: clojure">(declare visited? distance)</pre></td></tr><tr><td class="docs"><p>The nearest peer is the closest connected peer that we have not yet visited.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn select-nearest
   [peer m]
   (let [peers (:peers peer)
@@ -2997,13 +2997,13 @@ that.</p>
 </td><td class="codes"></td></tr><tr><td class="docs"><p>Now that we have decided who to send out message to we now need to
 pass it to the peer.</p>
 </td><td class="codes"></td></tr><tr><td class="docs"><p>If for some reason we could not find a peer to send the message to we
-need to reject it as it's undeliverable from our point of view.</p>
+need to reject it as it's not deliverable from our point of view.</p>
 </td><td class="codes"><pre class="brush: clojure">(def reject-send
   '[:process [:send peer remote m]
     :when (nil? remote)
-    :reject peer m])</pre></td></tr><tr><td class="docs"><p>Otherwise we get the peer's inbox and give it the message, we also
+    :reject peer m])</pre></td></tr><tr><td class="docs"><p>Otherwise we get the peer's in-box and give it the message, we also
 need to note that we visited the peer and wait for the message to be
-acknowleged.</p>
+acknowledged.</p>
 </td><td class="codes"><pre class="brush: clojure">(def do-send
   '[:process [:send peer remote m]
     :when remote
