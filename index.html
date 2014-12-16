@@ -2901,11 +2901,7 @@ each node and pass the coordinates around in our messages.</p>
 </td><td class="codes"><pre class="brush: clojure">(ns treguard.overlay)</pre></td></tr><tr><td class="docs"><h2>Peers</h2>
 </td><td class="codes"></td></tr><tr><td class="docs"><p>As overlay networks are most common in P2P (peer-to-peer) networks we
 will call our nodes peers.</p>
-</td><td class="codes"><pre class="brush: clojure">(defrecord Peer [id mail-in mail-out meta peers])</pre></td></tr><tr><td class="docs"><p>Each peer has an id, 2 mailboxes (one for outbound messages and one
-for incomming massages), some meta-data and a collection of other
-peers it knows about.</p>
-
-<p><graph>
+</td><td class="codes"><pre class="brush: clojure">(defrecord Peer [id mail-in mail-out meta peers])</pre></td></tr><tr><td class="docs"><p><graph>
 digraph {
 node [shape=record];
 peer [ label = "peer|{id|mail-in|mail-out|&lt;m&gt; meta|&lt;p&gt; peers}" ];
@@ -2915,6 +2911,10 @@ peer:m -> meta:m;
 peer:p -> peers:p;
 }
 </graph></p>
+
+<p>Each peer has an id, 2 mailboxes (one for outbound messages and one
+for incomming massages), some meta-data and a collection of other
+peers it knows about.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn make-peer
   ([id mail-in mail-out]
      (make-peer id mail-in mail-out {}))
@@ -2923,10 +2923,7 @@ peer:p -> peers:p;
   ([id mail-in mail-out meta peers]
      (-&gt;Peer id mail-in mail-out meta peers)))</pre></td></tr><tr><td class="docs"><h2>Messages</h2>
 </td><td class="codes"></td></tr><tr><td class="docs"><p>A message is something we want to be delivered to a peer.</p>
-</td><td class="codes"><pre class="brush: clojure">(defrecord Message [id from to meta body])</pre></td></tr><tr><td class="docs"><p>Each message has a message id, from address, to address, some meta-data,
-and the mesage body.</p>
-
-<p><graph>
+</td><td class="codes"><pre class="brush: clojure">(defrecord Message [id from to meta body])</pre></td></tr><tr><td class="docs"><p><graph>
 digraph {
 node [shape=record];
 message [ label = "message|{id|from|to|&lt;m&gt; meta|&lt;b&gt; body}" ];
@@ -2936,6 +2933,9 @@ message:m -> meta:m;
 message:b -> body:b;
 }
 </graph></p>
+
+<p>Each message has a message id, from address, to address, some meta-data,
+and the mesage body.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn make-message
   [id from to meta body]
   (-&gt;Message id from to meta body))</pre></td></tr><tr><td class="docs"><h2>Delivering a message</h2>
