@@ -3013,7 +3013,7 @@ to be acknowledged.</p>
                 (via peer)
                 (state :in-flight))]
     :deliver remote m
-    :wait-ack peer m])</pre></td></tr><tr><td class="docs">
+    :wait-ack peer remote m])</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn reply-to
   [m peer]
   (update-in m [:meta :reply-to] (:id peer)))</pre></td></tr><tr><td class="docs">
@@ -3024,7 +3024,7 @@ to be acknowledged.</p>
   [m state]
   (assoc-in m [:meta :state] state))</pre></td></tr><tr><td class="docs"><p>When a message is acknowledged we can acknowledge the sender</p>
 </td><td class="codes"><pre class="brush: clojure">(def wait-ack
-  '[:process [:wait-ack peer m]
+  '[:process [:wait-ack peer remote m]
     :when (ack? m)
     :ack-msg peer m])</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn ack?
