@@ -3070,10 +3070,11 @@ the message arrived at the peer.</p>
 ourselves. In this case we just put the message on our incomming
 mailbox.</p>
 </td><td class="codes"><pre class="brush: clojure">(add-process system
-  '[:process [:deliver peer m]
-    :when (`local? peer m)
-    :let [mail-in (:mail-in peer)]
-    :put mail-in m])</pre></td></tr><tr><td class="docs">
+             '[:process [:deliver peer m]
+               :let [local? (`local? peer m)]
+               :when local?
+               :let [mail-in (:mail-in peer)]
+               :put mail-in m])</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn set-meta
   ([m k v]
      (assoc-in m [:meta k] v)))</pre></td></tr><tr><td class="docs">
