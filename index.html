@@ -2998,13 +2998,13 @@ that.</p>
 pass it to the peer.</p>
 </td><td class="codes"></td></tr><tr><td class="docs"><p>If for some reason we could not find a peer to send the message to we
 need to reject it as it's undeliverable from our point of view.</p>
-</td><td class="codes"><pre class="brush: clojure">(defn reject-send
+</td><td class="codes"><pre class="brush: clojure">(def reject-send
   '[:process [:send peer remote m]
     :when (nil? remote)
     :reject peer m])</pre></td></tr><tr><td class="docs"><p>Otherwise we get the peer's inbox and give it the message, we also
 need to note that we visited the peer and wait for the message to be
 acknowleged.</p>
-</td><td class="codes"><pre class="brush: clojure">(defn do-send
+</td><td class="codes"><pre class="brush: clojure">(def do-send
   '[:process [:send peer remote m]
     :when remote
     :let [mail-in (:mail-in remote)
