@@ -125,9 +125,9 @@
 
 ;; When a message arrives on mail-out we want to try and route it.
 (add-process system
-  '[:process [:new-message peer]
-    :let [m [:get (:mail-out peer)]]
-    :route peer m])
+             '[:process [:new-message peer]
+               :let [m [:get (:mail-out peer)]]
+               :route peer m])
 
 ;; In the simplest case a message arrives which is addressed to youself,
 ;; in this case we just deliver it to ourselves.
@@ -147,13 +147,13 @@
 ;; already are connected to. In this case we send it to the remote peer
 ;; fir delivery.
 (add-process system
-  '[:process [:route peer m]
-    :let [id (:to m)
-          remote? (`remote? peer m)
-          connected? (`connected? id)]
-    :when (and remote? connected?)
-    :let [remote (get-in peer [:peers id])]
-    :send remote m])
+             '[:process [:route peer m]
+               :let [id (:to m)
+                     remote? (`remote? peer m)
+                     connected? (`connected? id)]
+               :when (and remote? connected?)
+               :let [remote (get-in peer [:peers id])]
+               :send remote m])
 
 (defn connected?
   [peer id]
@@ -163,13 +163,13 @@
 ;; connected peer. In this case we must select one and try to send it to
 ;; that.
 (add-process system
-  '[:process [:route peer m]
-    :let [id (:to m)
-          remote? (not (`local? peer m))
-          connected? (`connected? id)]
-    :when (and remote? (not connected?))
-    :let [remote (select-nearest peer m)]
-    :send peer remote m])
+             '[:process [:route peer m]
+               :let [id (:to m)
+                     remote? (not (`local? peer m))
+                     connected? (`connected? id)]
+               :when (and remote? (not connected?))
+               :let [remote (select-nearest peer m)]
+               :send peer remote m])
 
 (declare visited? distance)
 
@@ -204,22 +204,22 @@
 ;; If for some reason we could not find a peer to send the message to we
 ;; need to reject it as it's not routeable from our point of view.
 (add-process system
-  '[:process [:send peer remote m]
-    :when (not remote)
-    :reject-msg peer m])
+             '[:process [:send peer remote m]
+               :when (not remote)
+               :reject-msg peer m])
 
 ;; Otherwise we deliver the message to the remote peer, we also need to
 ;; note that the message visited this peer, then we wait for the message
 ;; to be acknowledged.
 (add-process system
-  '[:process [:send peer remote m]
-    :when remote
-    :let [m (-> m
-                (reply-to peer)
-                (via peer)
-                (state :in-flight))]
-    :deliver remote m
-    :wait-ack peer m])
+             '[:process [:send peer remote m]
+               :when remote
+               :let [m (-> m
+                           (reply-to peer)
+                           (via peer)
+                           (state :in-flight))]
+               :deliver remote m
+               :wait-ack peer m])
 
 (defn reply-to
   [m peer]
@@ -235,9 +235,9 @@
 
 ;; When a message is acknowledged we can acknowledge the sender
 (add-process system
-  '[:process [:wait-ack peer m]
-    :when (ack? m)
-    :ack-msg peer m])
+             '[:process [:wait-ack peer m]
+               :when (ack? m)
+               :ack-msg peer m])
 
 (defn ack?
   [m]
@@ -246,9 +246,9 @@
 ;; When a message is rejected we need to try to re-route it to someone
 ;; else.
 (add-process system
-  '[:process [:wait-ack peer m]
-    :when (reject? m)
-    :route peer m])
+             '[:process [:wait-ack peer m]
+               :when (reject? m)
+               :route peer m])
 
 (defn reject?
   [m]
@@ -258,25 +258,25 @@
 ;; address with the same message id as original message and `:ack` in
 ;; the body
 (add-process system
-  '[:process [:ack-msg peer m]
-    :let [reply-to (:reply-to m)
-          msg-id (:id msg)
-          peer-id (:id peer)
-          msg (make-message msg-id peer-id reply-to {} :ack)
-          remote (get-in peer [:peers peer-id])]
-    :deliver mail-in msg])
+             '[:process [:ack-msg peer m]
+               :let [reply-to (:reply-to m)
+                     msg-id (:id msg)
+                     peer-id (:id peer)
+                     msg (make-message msg-id peer-id reply-to {} :ack)
+                     remote (get-in peer [:peers peer-id])]
+               :deliver mail-in msg])
 
 ;; Rejecting a message is the same as an ack but with a body of
 ;; `:reject` and the via set from the rejected message.
 (add-process system
-  '[:process [:reject-msg peer m]
-    :let [reply-to (:reply-to m)
-          msg-id (:id msg)
-          peer-id (:id peer)
-          meta (select-keys (:meta m) [:via])
-          msg (make-message msg-id peer-id reply-to meta :reject)
-          remote (get-in peer [:peers peer-id])]
-    :deliver remote msg])
+             '[:process [:reject-msg peer m]
+               :let [reply-to (:reply-to m)
+                     msg-id (:id msg)
+                     peer-id (:id peer)
+                     meta (select-keys (:meta m) [:via])
+                     msg (make-message msg-id peer-id reply-to meta :reject)
+                     remote (get-in peer [:peers peer-id])]
+               :deliver remote msg])
 
 ;; ## Delivering messages
 
