@@ -32,4 +32,9 @@
   (update-in proc [:statements] conj {:op :when :cond (first args)}))
 
 (defmethod parse-stmt :let [proc [_ args]]
-  (update-in proc [:statements] conj {:op :let :args args}))
+  (when-not (= 1 (count args))
+    (throw (IllegalArgumentException. "Let statements must have exactly one argumnet")))
+  (let [bindings (first args)]
+    (when-not (sequential? bindings)
+      (throw (IllegalArgumentException. "A let binding must be a sequence of forms")))
+    (update-in proc [:statements] conj {:op :let :args args})))

@@ -22,10 +22,20 @@
        (let [proc (parse-process '[:process [:w] :when a :when (true? a)])]
          (fact "they have an op of :when"
                (-> proc :statements first) => (contains {:op :when}))
-         (fact "They must have exactly one argument"
+         (fact "they must have exactly one argument"
                (parse-process '[:process [:w] :when a]) => map?
                (parse-process '[:process [:w] :when]) => (throws IllegalArgumentException "When statements must have exactly one argumnet")
                (parse-process '[:process [:w] :when a b]) => (throws IllegalArgumentException "When statements must have exactly one argumnet"))
-         (fact "They have a cond"
+         (fact "they have a cond"
                (-> proc :statements first) => (contains {:cond 'a})
                (-> proc :statements second) => (contains {:cond '(true? a)}))))
+
+(facts "About let statements"
+       (let [proc (parse-process '[:process [:l] :let [a b]])]
+         (fact "they have an op of let"
+               (-> proc :statements first) => (contains {:op :let}))
+         (fact "they must have exactly one argument which is a sequence"
+               (parse-process '[:process [:w] :let [a b]]) => map?
+               (parse-process '[:process [:w] :let]) => (throws IllegalArgumentException "Let statements must have exactly one argumnet")
+               (parse-process '[:process [:w] :let a b]) => (throws IllegalArgumentException "Let statements must have exactly one argumnet")
+               (parse-process '[:process [:w] :let a]) => (throws IllegalArgumentException "A let binding must be a sequence of forms"))))
