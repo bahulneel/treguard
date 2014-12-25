@@ -9,7 +9,7 @@
 (defn parse-process [def]
   (let [statments (->> def
                        (partition-by keyword?)
-                       (partition 2)
+                       (partition-all 2)
                        (reduce parse-stmt {}))]
     (when-not (:name statments)
       (throw (IllegalArgumentException. "Processes must contain a process definition")))
@@ -27,7 +27,9 @@
   proc)
 
 (defmethod parse-stmt :when [proc [_ args]]
-  (update-in proc [:statements] conj {:op :when :args args}))
+  (when-not (= 1 (count args))
+    (throw (IllegalArgumentException. "When statements must have exactly one argumnet")))
+  (update-in proc [:statements] conj {:op :when :cond (first args)}))
 
 (defmethod parse-stmt :let [proc [_ args]]
   (update-in proc [:statements] conj {:op :let :args args}))
