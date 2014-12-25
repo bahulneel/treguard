@@ -14,4 +14,6 @@
                             "js/sequence-diagram-min.js"
                             "js/viz.js"
                             "js/jquery-2.1.1.min.js"
-                            "js/main.js"]})
+                            "js/main.js"]}
+  :profiles {:dev {:dependencies [[midje "1.6.3"]]
+                   :plugins [[lein-midje "3.1.3"]]}})
