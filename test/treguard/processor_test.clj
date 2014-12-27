@@ -20,7 +20,7 @@
                (-> proc :statements second) => (contains {:op :let}))))
 
 (facts "About when statements"
-       (let [proc (parse-process '[:process [:w] :when a :when (true? a)])]
+       (let [proc (parse-process '[:process [:w] :when a :when (true? a) :when (or a true)])]
          (fact "they have an op of :when"
                (-> proc :statements first) => (contains {:op :when}))
          (fact "they must have exactly one argument"
@@ -31,7 +31,9 @@
                                                                      "When statements must have exactly one argumnet"))
          (fact "they have a cond"
                (-> proc :statements first) => (contains {:cond 'a})
-               (-> proc :statements second) => (contains {:cond '(true? a)}))))
+               (-> proc :statements second) => (contains {:cond '(true? a)}))
+         (fact "the cond is macro expanded"
+               (-> proc :statements (nth 2) :cond first) => 'let*)))
 
 (facts "About let statements"
        (let [proc (parse-process '[:process [:l] :let [a b]])]
@@ -73,9 +75,6 @@
                (-> proc :statements first) => (contains {:process :foo}))
          (fact "they have a sequnce of arguments"
                 (-> proc :statements first) => (contains {:args '[a b c]}))))
-
-;; TODO for let and when forms need to try macro expansion and for let bindings
-;; need to call out to destructure.
 
 ;; TODO deal with edge cases that would slip up partition-by, consider
 ;; using a state state machine

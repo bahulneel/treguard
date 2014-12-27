@@ -30,7 +30,8 @@
 (defmethod parse-stmt :when [proc [_ args]]
   (when-not (= 1 (count args))
     (throw (IllegalArgumentException. "When statements must have exactly one argumnet")))
-  (update-in proc [:statements] conj {:op :when :cond (first args)}))
+  (let [cond (-> args first clojure.walk/macroexpand-all)]
+    (update-in proc [:statements] conj {:op :when :cond cond})))
 
 (defmethod parse-stmt :let [proc [_ args]]
   (when-not (= 1 (count args))
