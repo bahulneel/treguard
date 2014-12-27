@@ -54,7 +54,16 @@
                (parse-process '[:process [:w] :let [a b c d]]) => map?)
          (fact "they have bindings"
                (let [proc (parse-process '[:process [:w] :let [a b c d]])]
-                 (-> proc :statements first)) => (contains {:bindings '[[a b] [c d]]}))))
+                 (-> proc :statements first)) => (contains {:bindings '[[a b] [c d]]}))
+         (fact "bindings are destructured"
+               (let [proc (parse-process '[:process [:w] :let [[a b] c]])]
+                 (-> proc :statements first :bindings first second) => 'c
+                 (-> proc :statements first :bindings second first) => 'a
+                 (-> proc :statements first :bindings (nth 2) first) => 'b))
+         (fact "bidings are macroexpanded"
+               (let [proc (parse-process '[:process [:w] :let [a (-> b first)]])]
+                 (-> proc :statements first :bindings first first) => 'a
+                 (-> proc :statements first :bindings first second) => '(first b)))))
 
 (facts "About parsing a call"
        (let [proc (parse-process '[:process [:c] :foo a b c])]

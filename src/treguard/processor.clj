@@ -40,5 +40,10 @@
       (throw (IllegalArgumentException. "A let binding must be a sequence of bindings")))
     (when-not (even? (count bindings))
       (throw (IllegalArgumentException. "A binding sequence must contain an even number of forms")))
-    (let [bindings (partition 2 (first args))]
+    (let [bindings (->> args
+                        first
+                        destructure
+                        (partition 2)
+                        (map (fn [[s expr]]
+                               [s (clojure.walk/macroexpand-all expr)])))]
       (update-in proc [:statements] conj {:op :let :bindings bindings}))))
