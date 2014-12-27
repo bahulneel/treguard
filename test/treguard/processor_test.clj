@@ -78,3 +78,14 @@
 
 ;; TODO deal with edge cases that would slip up partition-by, consider
 ;; using a state state machine
+
+;; TODO perform static analysis of a process
+
+;; TODO figure out how to do global bindings (maybe via a assumed global
+;; e.g. env)
+
+;; TODO run a process via steps
+
+;; TODO describe a system
+
+;; TODO run a system via steps
