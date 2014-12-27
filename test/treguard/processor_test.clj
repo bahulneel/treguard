@@ -57,5 +57,8 @@
          (fact "they have a sequnce of arguments"
                 (-> proc :statements first) => (contains {:args '[a b c]}))))
 
+;; TODO for all forms need to try macro expansion and for let bindings
+;; need to call out to destructure.
+
 ;; TODO deal with edge cases that would slip up partition-by, consider
 ;; using a state state machine
