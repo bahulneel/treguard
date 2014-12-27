@@ -23,8 +23,9 @@
       :statements [])))
 
 (defmethod parse-stmt :default [proc [name args]]
-  (println "Unknown " name)
-  proc)
+  (update-in proc [:statements] conj {:op :call
+                                      :process (first name)
+                                      :args args}))
 
 (defmethod parse-stmt :when [proc [_ args]]
   (when-not (= 1 (count args))
@@ -36,5 +37,8 @@
     (throw (IllegalArgumentException. "Let statements must have exactly one argumnet")))
   (let [bindings (first args)]
     (when-not (sequential? bindings)
-      (throw (IllegalArgumentException. "A let binding must be a sequence of forms")))
-    (update-in proc [:statements] conj {:op :let :args args})))
+      (throw (IllegalArgumentException. "A let binding must be a sequence of bindings")))
+    (when-not (even? (count bindings))
+      (throw (IllegalArgumentException. "A binding sequence must contain an even number of forms")))
+    (let [bindings (partition 2 (first args))]
+      (update-in proc [:statements] conj {:op :let :bindings bindings}))))

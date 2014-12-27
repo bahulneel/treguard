@@ -38,4 +38,24 @@
                (parse-process '[:process [:w] :let [a b]]) => map?
                (parse-process '[:process [:w] :let]) => (throws IllegalArgumentException "Let statements must have exactly one argumnet")
                (parse-process '[:process [:w] :let a b]) => (throws IllegalArgumentException "Let statements must have exactly one argumnet")
-               (parse-process '[:process [:w] :let a]) => (throws IllegalArgumentException "A let binding must be a sequence of forms"))))
+               (parse-process '[:process [:w] :let a]) => (throws IllegalArgumentException "A let binding must be a sequence of bindings"))
+         (fact "a binding sequence must contain a even number of forms"
+               (parse-process '[:process [:w] :let [a]]) => (throws IllegalArgumentException "A binding sequence must contain an even number of forms")
+               (parse-process '[:process [:w] :let [a b]]) => map?
+               (parse-process '[:process [:w] :let [a b c]]) => (throws IllegalArgumentException "A binding sequence must contain an even number of forms")
+               (parse-process '[:process [:w] :let [a b c d]]) => map?)
+         (fact "they have bindings"
+               (let [proc (parse-process '[:process [:w] :let [a b c d]])]
+                 (-> proc :statements first)) => (contains {:bindings '[[a b] [c d]]}))))
+
+(facts "About parsing a call"
+       (let [proc (parse-process '[:process [:c] :foo a b c])]
+         (fact "they have an op of :call"
+               (-> proc :statements first) => (contains {:op :call}))
+         (fact "they have a process name of the keyword"
+               (-> proc :statements first) => (contains {:process :foo}))
+         (fact "they have a sequnce of arguments"
+                (-> proc :statements first) => (contains {:args '[a b c]}))))
+
+;; TODO deal with edge cases that would slip up partition-by, consider
+;; using a state state machine
