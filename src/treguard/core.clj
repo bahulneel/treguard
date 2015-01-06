@@ -55,8 +55,7 @@
   (terminated [this] "Select all the blocked processes, in schedule order")
   (waiting [this] "Select all the waiting processes, in schedule order")
   (blocked [this] "Select all the blocked processes, in schedule order")
-  (cores [this] "The number of parallel processes")
-  (update [this updates] "Update the env state and return the new state"))
+  (cores [this] "The number of parallel processes"))
 
 ;; We can ask the execution envirionment to update the state
 ;; but we need the correct representation
@@ -64,7 +63,8 @@
   (combine [this u1 u2] "Combine 2 updates into a single update")
   (set-state [this process new-state] "Update the execution state")
   (set-ctx [this process reg val] "Set the value of a register in the context")
-  (clear-ctx [this process reg val] "Clears the value of a register in the context"))
+  (clear-ctx [this process reg val] "Clears the value of a register in the context")
+  (update-env [this updates] "Update the env state and return the new state"))
 
 ;; The dispatcher
 ;; selects all the running processes,
@@ -77,7 +77,7 @@
         from (async/chan c)]
     (async/pipeline c to pipeline-xf from)
     (async/onto-chan from processes)
-    (update env (async/<!! (async/into [] to)))))
+    (update-env env (async/<!! (async/into [] to)))))
 
 ;; The short term scheduler
 ;; selects which of the waiting processes should be run next
@@ -89,19 +89,19 @@
                    waiting
                    selector
                    (map run))]
-    (update env processes)))
+    (update-env env processes)))
 
 ;; the medium-term scheduler
 ;; selects which of the blocked processes are no longer blocked
 ;; then applys the change to the exec env
-(defn long-term-schedule [env blocked?]
+(defn medium-term-schedule [env blocked?]
   (let [wait (fn [process]
               (set-state env process :waiting))
         processes (->> env
                    blocked
                    (remove blocked?)
                    (map wait))]
-    (update env processes)))
+    (update-env env processes)))
 
 ;; the long-term scheduler
 ;; selects which of the new processes should be started next
@@ -113,4 +113,4 @@
                    created
                    selector
                    (map wait))]
-    (update env processes)))
+    (update-env env processes)))
