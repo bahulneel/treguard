@@ -174,14 +174,17 @@
 ;; the local context and a message in (or nil)
 ;; and returns
 ;; the new context and a message out (or nil)
+;;
+;;     (f ctx m-in) -> [ctx' m-out]
+;;
 (defrecord Process [f ctx in out]
   IProcess
   (run [p]
-    (let [min (peek in)]
-      (when-let [res (f ctx min)]
-        (let [[ctx^ mout] res]
-          (-> (if mout (update-in p [:out] conj mout) p)
-              (assoc :ctx ctx^)
+    (let [m-in (peek in)]
+      (when-let [res (f ctx m-in)]
+        (let [[ctx' m-out] res]
+          (-> (if m-out (update-in p [:out] conj m-out) p)
+              (assoc :ctx ctx')
               (update-in [:in] pop))))))
   (enqueue [p m]
     (update-in p [:in] conj m))
