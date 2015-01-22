@@ -177,7 +177,7 @@
 ;;
 ;;     (f ctx m-in) -> [ctx' m-out]
 ;;
-(defrecord Process [f ctx in out]
+(defrecord Proc [f ctx in out]
   IProcess
   (run [p]
     (let [m-in (peek in)]
@@ -189,19 +189,20 @@
   (enqueue [p m]
     (update-in p [:in] conj m))
   (dequeue [p]
-    (let [m (peek out)]
-      (update-in p [:out] pop))))
+    (let [m (peek out)
+          p' (update-in p [:out] pop)]
+      [p' m])))
 
-(defn process
+(defn proc
   ([f ctx]
      (let [in clojure.lang.PersistentQueue/EMPTY
            out clojure.lang.PersistentQueue/EMPTY]
-       (process f ctx in out)))
+       (proc f ctx in out)))
   ([f ctx in out]
-     {:pre [(implements? IFn f)
-            (implements? IColl in)
-            (implements? IColl out)]}
-     (->Process f ctx in out)))
+     {:pre [(ifn? f)
+            (coll? in)
+            (coll? out)]}
+     (->Proc f ctx in out)))
 
 (comment
 ;;  LocalWords:  STS pre ctx ns treguard algo
