@@ -3111,7 +3111,7 @@ use nil.</p>
 </td><td class="codes"></td></tr><tr><td class="docs"><p>We earlier defined a system as
 existing in some configuration <code>C</code>
 which is the collection of the state
-of all processes in that systems.</p>
+of all processes in that system.</p>
 </td><td class="codes"></td></tr><tr><td class="docs"><p>We can generalise this to a protocol
 that allows us to:</p>
 
@@ -3127,8 +3127,8 @@ that allows us to:</p>
   (kill [s pid] &quot;Kill a process, returns the new configuration and the
               killed process&quot;)
   (ps [s] &quot;List all processes&quot;)
-  (step [s] &quot;Run the system one stepm, returns the new confiuration&quot;))</pre></td></tr><tr><td class="docs"><p>We can also generalise the configuration
-to a protocol that alows us to:</p>
+  (step [s] &quot;Run the system one step, returns the new configuration&quot;))</pre></td></tr><tr><td class="docs"><p>We can also generalise the configuration
+to a protocol that allows us to:</p>
 
 <ul>
 <li>add a process</li>
@@ -3220,7 +3220,7 @@ blocked -> waiting [label="inbound > 0"]
            ;; s = running /\ p == p' -&gt; blocked
            [:running p       [p' _ _]             ] (if (= p p') :blocked :running)
            ;;
-           ;; s = blocked /| inbound messages -&gt; waiting
+           ;; s = blocked /\ inbound messages -&gt; waiting
            [:blocked _       [_ (m :guard pos?) _]] :waiting
            ;;
            ;; state unchanged
