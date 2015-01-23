@@ -2866,7 +2866,7 @@ net.brehaut.ClojureTools = (function (SH) {
   };
 })(SyntaxHighlighter);
 </script><script src="js/underscore-min.js" type="text/javascript"></script><script src="js/raphael-min.js" type="text/javascript"></script><script src="js/flowchart-latest.js" type="text/javascript"></script><script src="js/sequence-diagram-min.js" type="text/javascript"></script><script src="js/viz.js" type="text/javascript"></script><script src="js/jquery-2.1.1.min.js" type="text/javascript"></script><script src="js/main.js" type="text/javascript"></script><title>treguard -- Marginalia</title></head><body><table><tr><td class="docs"><div class="header"><h1 class="project-name"><a href="http://example.com/FIXME">treguard</a></h1><h2 class="project-version">0.1.0-SNAPSHOT</h2><br /><p>FIXME: write description</p>
-</div><div class="dependencies"><h3>dependencies</h3><table><tr><td class="dep-name">org.clojure/clojure</td><td class="dotted"><hr /></td><td class="dep-version">1.6.0</td></tr><tr><td class="dep-name">org.clojure/core.async</td><td class="dotted"><hr /></td><td class="dep-version">0.1.346.0-17112a-alpha</td></tr></table></div></td><td class="codes" style="text-align: center; vertical-align: middle;color: #666;padding-right:20px"><br /><br /><br />(this space intentionally left almost blank)</td></tr><tr><td class="docs"><div class="toc"><a name="toc"><h3>namespaces</h3></a><ul><li><a href="#treguard.algo">treguard.algo</a></li></ul></div></td><td class="codes">&nbsp;</td></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#treguard.algo" name="treguard.algo"><h1 class="project-name">treguard.algo</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><h2>A Distributed System</h2>
+</div><div class="dependencies"><h3>dependencies</h3><table><tr><td class="dep-name">org.clojure/clojure</td><td class="dotted"><hr /></td><td class="dep-version">1.6.0</td></tr><tr><td class="dep-name">org.clojure/core.match</td><td class="dotted"><hr /></td><td class="dep-version">0.3.0-alpha4</td></tr><tr><td class="dep-name">org.clojure/core.async</td><td class="dotted"><hr /></td><td class="dep-version">0.1.346.0-17112a-alpha</td></tr></table></div></td><td class="codes" style="text-align: center; vertical-align: middle;color: #666;padding-right:20px"><br /><br /><br />(this space intentionally left almost blank)</td></tr><tr><td class="docs"><div class="toc"><a name="toc"><h3>namespaces</h3></a><ul><li><a href="#treguard.algo">treguard.algo</a></li></ul></div></td><td class="codes">&nbsp;</td></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#treguard.algo" name="treguard.algo"><h1 class="project-name">treguard.algo</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><h2>A Distributed System</h2>
 
 <h3>Processes</h3>
 
@@ -2939,6 +2939,7 @@ all waiting processes running.</p>
 
 <pre><graph>
 digraph {
+start [shape="point"]
 running -> running [label="(p s) != s"]
 running -> blocked [label="(p s) = s"]
 running -> terminated [label="(p s) = nil"]
@@ -2946,6 +2947,7 @@ blocked -> blocked [label="(e s) = s"]
 blocked -> waiting [label="(e s) != s"]
 waiting -> waiting [label="(e s) = s"]
 waiting -> running
+start -> waiting
 }
 </graph></pre>
 
@@ -3029,7 +3031,8 @@ sequential and parallel steps:</p>
 the (possibly infinite) sequence of configurations
 of a given system.</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(ns treguard.algo)</pre></td></tr><tr><td class="docs"><h2>The Process</h2>
+</td><td class="codes"><pre class="brush: clojure">(ns treguard.algo
+  (:require [clojure.core.match :refer [match]]))</pre></td></tr><tr><td class="docs"><h2>The Process</h2>
 </td><td class="codes"></td></tr><tr><td class="docs"><p>We previously defined a process as
 a state <code>s</code>
 and a transition function <code>p</code>.
@@ -3044,6 +3047,7 @@ protocol where we can either:</p>
 <li>run the process</li>
 <li>enqueue a message to the inbound queue</li>
 <li>dequeue a message from the outbound queue</li>
+<li>get the size of the queues</li>
 </ul>
 </td><td class="codes"><pre class="brush: clojure">(defprotocol IProcess
   (run [p] &quot;Run the process,
@@ -3051,7 +3055,8 @@ protocol where we can either:</p>
   (enqueue [p m] &quot;Enqueue an inbound message,
                   returns the new process state&quot;)
   (dequeue [p] &quot;Dequeue and outbound message,
-                returns a tuple the new process state and an oubound message (or nil)&quot;))</pre></td></tr><tr><td class="docs"><p>More concretely we have
+                returns a tuple the new process state and an oubound message (or nil)&quot;)
+  (pending [p] &quot;Returns a tuple of the number of waiting in and out messages&quot;))</pre></td></tr><tr><td class="docs"><p>More concretely we have
 a process that is made up of:</p>
 
 <ul>
@@ -3091,7 +3096,9 @@ use nil.</p>
   (dequeue [p]
     (let [m (peek out)
           p' (update-in p [:out] pop)]
-      [p' m])))</pre></td></tr><tr><td class="docs">
+      [p' m]))
+  (pending [p]
+    [(count in) (count out)]))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn proc
   ([f ctx]
      (let [in clojure.lang.PersistentQueue/EMPTY
@@ -3115,13 +3122,28 @@ that alows us to:</p>
 <li>list processes (ps)</li>
 <li>run the system 1 step</li>
 </ul>
-</td><td class="codes"><pre class="brush: clojure">(defprotocol ISys
+</td><td class="codes"><pre class="brush: clojure">(defprotocol ISystem
   (exec [s p] &quot;Execute a process, returns the new configuration and a
              process id&quot;)
   (kill [s pid] &quot;Kill a process, returns the new configuration and the
               killed process&quot;)
   (ps [s] &quot;List all processes&quot;)
-  (step [s] &quot;Run the system one stepm, returns the new confiuration&quot;))</pre></td></tr><tr><td class="docs"><p>Concretely, as system is made up of</p>
+  (step [s] &quot;Run the system one stepm, returns the new confiuration&quot;))</pre></td></tr><tr><td class="docs"><p>We can also generalise the configuration
+to a protocol that alows us to:</p>
+
+<ul>
+<li>add a process</li>
+<li>remove a process</li>
+<li>get a process with it's state</li>
+<li>update a process</li>
+<li>list all processes</li>
+</ul>
+</td><td class="codes"><pre class="brush: clojure">(defprotocol IConfig
+  (addp [c pid p] &quot;Add a process&quot;)
+  (removep [c pid] &quot;Removes a process&quot;)
+  (getp [c pid] &quot;Returns a tuple of a process and it's state&quot;)
+  (updatep [c pid p'] &quot;Updates a process&quot;)
+  (listp [c] &quot;Lists all processes&quot;))</pre></td></tr><tr><td class="docs"><p>Concretely, a system is made up of</p>
 
 <ul>
 <li>a configuration</li>
@@ -3129,21 +3151,59 @@ that alows us to:</p>
 <li>a parallel step function</li>
 </ul>
 </td><td class="codes"><pre class="brush: clojure">(defrecord Sys [c sqs prs]
-  ISys
+  ISystem
   (exec [s p]
     (let [pid (java.util.UUID/randomUUID)
-          ps [p :waiting]
-          s' (update-in s [:c] assoc pid ps)]
+          s' (update-in s [:c] addp pid ps)]
       [s' pid]))
   (kill [s pid]
-    (let [ps (get c pid)
-          s' (update-in s [:c] dissoc pid)]
+    (let [ps (getp c pid)
+          s' (update-in s [:c] removep pid)]
       [s' ps]))
   (ps [s]
     c)
   (step [s]
     (let [c' (-&gt; c sqs prs)]
-      (assoc s :c c'))))</pre></td></tr><tr><td class="docs">
+      (assoc s :c c'))))</pre></td></tr><tr><td class="docs"><p>And concretely a configuration is made up of</p>
+
+<ul>
+<li>a process map</li>
+<li>a state transition fn</li>
+</ul>
+</td><td class="codes"><pre class="brush: clojure">(defrecord Conf [m state]
+  IConfig
+  (addp [c pid p]
+    (let [s (state nil nil p)
+          ps [p s]]
+      (update-in c [:m] assoc pid p)))
+  (removep [c pid]
+    (update-in c [:m] dissoc pid))
+  (getp [c pid]
+    (get m pid))
+  (updatep [c pid p']
+    (let [[p s] (get m pid)
+          s' (state p s p')
+          ps' [(or p' p) s']]
+      (update-in c [:m] pid ps')))
+  (listp [_]
+    m))</pre></td></tr><tr><td class="docs"><p>We can also define the standard
+process state transition function</p>
+</td><td class="codes"><pre class="brush: clojure">(defn procees-state
+  [p s p']
+  (let [[min mout] (pending p)
+        [min' mout'] (pending p')])
+  (match [s [p min mout] [p' min' mout']     ]
+         ;; s = nil -&gt; waiting
+         [nil _          _                   ] :waiting
+         ;; outbound messages -&gt; waiting
+         [_ _            [_ _ (m :guard pos)]] :waiting
+         ;; s = waiting -&gt; running
+         [:waiting _     _                   ] :running
+         ;; s = running -&gt; p' = nil -&gt; treminated
+         [:running _     [nil _ _]           ] :terminated
+         []
+         ;; state unchanged
+         :else s))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(comment
 ;;  LocalWords:  STS pre ctx ns treguard algo Pn
 )</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr></table><div class="footer">Generated by <a href="https://github.com/gdeer81/marginalia">Marginalia</a>.&nbsp;&nbsp;Syntax highlighting provided by Alex Gorbatchev's <a href="http://alexgorbatchev.com/SyntaxHighlighter/">SyntaxHighlighter</a><div id="floating-toc"><ul><li class="floating-toc-li" id="floating-toc_treguard.algo">treguard.algo</li></ul></div></div><script type="text/javascript">SyntaxHighlighter.defaults['gutter'] = false;
