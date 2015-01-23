@@ -3186,8 +3186,22 @@ to a protocol that alows us to:</p>
           p-s' [(or p' p) s']]
       (update-in c [:m] assoc pid p-s')))
   (listp [_]
-    m))</pre></td></tr><tr><td class="docs"><p>We can also define the standard
-process state transition function</p>
+    m))</pre></td></tr><tr><td class="docs"><p>We can also define the standard</p>
+
+<pre><graph>
+digraph {
+start [shape="point"]
+start -> waiting [label="s = nil"]
+waiting -> waiting [label="outbound > 0"]
+waiting -> running
+running -> terminated [label="p' = nil"]
+running -> running [label="p != p'"]
+running -> blocked [label="p = p'"]
+blocked -> waiting [label="inbound > 0"]
+}
+</graph></pre>
+
+<p>process state transition function</p>
 </td><td class="codes"><pre class="brush: clojure">(defn process-state
   [s p p']
   (let [[min mout] (if p (pending p) [0 0])
