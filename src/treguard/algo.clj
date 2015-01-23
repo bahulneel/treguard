@@ -1,5 +1,7 @@
 ;; ## A Distributed System
+;;
 ;; ### Processes
+;;
 ;; In a distributed system
 ;; we can define a process
 ;; as a series of
@@ -51,7 +53,7 @@
 ;;
 ;; In the latter transition
 ;; if a process is blocked it is then waiting or
-;; if a process is running or waiting it it unchanged.
+;; if a process is running or waiting it is unchanged.
 ;;
 ;;
 ;; If a process is waiting then we can put it into the
@@ -76,8 +78,8 @@
 ;;
 ;; ### Message Passing
 ;; In order for processes to communicate with each other
-;; and the outside world they need to be pass messages around.
-;; We can do this my modelling a process state as the
+;; and the outside world they need to pass messages around.
+;; We can do this by modelling a process state as the
 ;; conjunction of
 ;; local state,
 ;; in-bound messages
@@ -101,22 +103,26 @@
 ;; A system is a collection of processes
 ;; that collaborate to provide
 ;; some service or services.
-;; We define a systems as a configuration of
-;; processes and their states.
+;; At any one point in time we can define
+;; the state of a system as a configuration.
+;; This a collection of
+;; processes,
+;; their states and
+;; their execution states
 ;;
-;;     C -> ([P1 S1], [P2 S2], ... , [Pn Sn])
+;;     C -> ([P1 S1 E1], [P2 S2 E2], ... , [Pn Sn En])
 ;;
 ;; A configuration can advance in one of the following ways:
 ;;
 ;; - A waiting process is marked as running
 ;; - A running process is executed
-;; - A message is taken from an outbound queue and deivered to an
+;; - A message is taken from an outbound queue and delivered to an
 ;;   inbound queue
 ;; - A process with an non empty inbound queue is unblocked
 ;;
-;; Apart from message deivery
-;; each of the above steps are independant
-;; and therefore can be executed in parallel.
+;; Apart from message delivery
+;; each of the above steps are independent
+;; and so can be executed in parallel.
 ;; We can therefore divide the system into two steps
 ;; the parallel step and the sequential step:
 ;;
@@ -130,30 +136,34 @@
 ;;     sqs -> the sequential step
 ;;     prs -> the parallel step
 ;;
-;; We can then avance the system by interleaving the
+;; We can then advance the system by interleaving the
 ;; sequential and parallel steps:
 ;;
-;;     (prs (sqs C)) -> C'
+;;     (prs (sqs C))  -> C'
+;;     (prs (sqs C')) -> C''
 ;;
 ;; Given this model we can define a execution as
-;; the sequence of configurations
-;; of a given system
+;; the (possibly infinite) sequence of configurations
+;; of a given system.
+
 (ns treguard.algo)
 
 ;; ## The Process
 
-;; We defined a process as a state `s`
+;; We previously defined a process as
+;; a state `s`
 ;; and a transition function `p`.
-;; We later defined defined the state as
+;; We further defined the state as
 ;; a local context,
-;; in inbound queue and
-;; and outbound queue.
+;; an inbound queue and
+;; an outbound queue.
 
-;; More generally a process defines a
-;; protocol where we can either
-;; run the process,
-;; enqueue a message to the inbound queue or
-;; dequeue a message from the outbound queue.
+;; We can define a general process as a
+;; protocol where we can either:
+;;
+;;  - run the process
+;;  - enqueue a message to the inbound queue
+;;  - dequeue a message from the outbound queue
 (defprotocol IProcess
   (run [p] "Run the process,
             returns the new process state or nil")
@@ -162,28 +172,36 @@
   (dequeue [p] "Dequeue and outbound message,
                 returns a tuple the new process state and an oubound message (or nil)"))
 
-;; Concretely we have
+;; More concretely we have
 ;; a process that is made up of:
 ;;
-;; - a function to run the process
+;; - a transition function
 ;; - the local context
 ;; - the inbound queue
 ;; - the outbound queue
 ;;
-;; Where the function used takes
-;; the local context and a message in (or nil)
+;; Where the transition function takes
+;; the local context and
+;; a message in
 ;; and returns
-;; the new context and a message out (or nil)
+;; the new context and
+;; a message out
+;; or nil if the process has terminated.
 ;;
-;;     (f ctx m-in) -> [ctx' m-out]
+;;     (f ctx m-in) -> [ctx' m-out]  Normal execution
+;;     (f ctx m-in) -> nil           Termination
 ;;
+;; If we don't have a message (in or out) we
+;; use nil.
 (defrecord Proc [f ctx in out]
   IProcess
   (run [p]
     (let [m-in (peek in)]
       (when-let [res (f ctx m-in)]
         (let [[ctx' m-out] res]
-          (-> (if m-out (update-in p [:out] conj m-out) p)
+          (-> (if m-out
+                (update-in p [:out] conj m-out)
+                p)
               (assoc :ctx ctx')
               (update-in [:in] pop))))))
   (enqueue [p m]
@@ -205,5 +223,5 @@
      (->Proc f ctx in out)))
 
 (comment
-;;  LocalWords:  STS pre ctx ns treguard algo
+;;  LocalWords:  STS pre ctx ns treguard algo Pn
 )
