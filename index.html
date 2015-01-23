@@ -3038,12 +3038,12 @@ a local context,
 an inbound queue and
 an outbound queue.</p>
 </td><td class="codes"></td></tr><tr><td class="docs"><p>We can define a general process as a
-protocol where we can either</p>
+protocol where we can either:</p>
 
 <ul>
-<li>run the process,</li>
-<li>enqueue a message to the inbound queue or</li>
-<li>dequeue a message from the outbound queue.</li>
+<li>run the process</li>
+<li>enqueue a message to the inbound queue</li>
+<li>dequeue a message from the outbound queue</li>
 </ul>
 </td><td class="codes"><pre class="brush: clojure">(defprotocol IProcess
   (run [p] &quot;Run the process,
@@ -3069,7 +3069,8 @@ the new context and
 a message out
 or nil if the process has terminated.</p>
 
-<pre><code>(f ctx m-in) -&gt; [ctx' m-out]
+<pre><code>(f ctx m-in) -&gt; [ctx' m-out]  Normal execution
+(f ctx m-in) -&gt; nil           Termination
 </code></pre>
 
 <p>If we don't have a message (in or out) we
