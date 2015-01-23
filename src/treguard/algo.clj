@@ -316,6 +316,7 @@
 ;; start -> waiting [label="s = nil"]
 ;; waiting -> waiting [label="outbound > 0"]
 ;; waiting -> running
+;; running -> waiting [label="outbound > 0"]
 ;; running -> terminated [label="p' = nil"]
 ;; running -> running [label="p != p'"]
 ;; running -> blocked [label="p = p'"]
