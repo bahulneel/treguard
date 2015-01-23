@@ -2865,321 +2865,227 @@ net.brehaut.ClojureTools = (function (SH) {
     build_tree: build_tree
   };
 })(SyntaxHighlighter);
-</script><script src="js/underscore-min.js" type="text/javascript"></script><script src="js/raphael-min.js" type="text/javascript"></script><script src="js/flowchart-latest.js" type="text/javascript"></script><script src="js/sequence-diagram-min.js" type="text/javascript"></script><script src="js/viz.js" type="text/javascript"></script><script src="js/jquery-2.1.1.min.js" type="text/javascript"></script><script src="js/main.js" type="text/javascript"></script><title>treguard -- Marginalia</title></head><body><table><tr><td class="docs"><div class="header"><h1 class="project-name"><a href="http://example.com/FIXME">treguard</a></h1><h2 class="project-version">0.1.0-SNAPSHOT</h2><br /><p>FIXME: write description</p>
-</div><div class="dependencies"><h3>dependencies</h3><table><tr><td class="dep-name">org.clojure/clojure</td><td class="dotted"><hr /></td><td class="dep-version">1.6.0</td></tr><tr><td class="dep-name">org.clojure/core.async</td><td class="dotted"><hr /></td><td class="dep-version">0.1.346.0-17112a-alpha</td></tr><tr><td class="dep-name">vivaldi</td><td class="dotted"><hr /></td><td class="dep-version">0.1.0</td></tr><tr><td class="dep-name">dorothy</td><td class="dotted"><hr /></td><td class="dep-version">0.0.6</td></tr></table></div></td><td class="codes" style="text-align: center; vertical-align: middle;color: #666;padding-right:20px"><br /><br /><br />(this space intentionally left almost blank)</td></tr><tr><td class="docs"><div class="toc"><a name="toc"><h3>namespaces</h3></a><ul><li><a href="#treguard.overlay">treguard.overlay</a></li><li><a href="#treguard.utils.dot">treguard.utils.dot</a></li></ul></div></td><td class="codes">&nbsp;</td></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#treguard.overlay" name="treguard.overlay"><h1 class="project-name">treguard.overlay</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><h2>Overlay networks</h2>
+</script><title>treguard -- Marginalia</title></head><body><table><tr><td class="docs"><div class="header"><h1 class="project-name"><a href="http://example.com/FIXME">treguard</a></h1><h2 class="project-version">0.1.0-SNAPSHOT</h2><br /><p>FIXME: write description</p>
+</div><div class="dependencies"><h3>dependencies</h3><table><tr><td class="dep-name">org.clojure/clojure</td><td class="dotted"><hr /></td><td class="dep-version">1.6.0</td></tr><tr><td class="dep-name">org.clojure/core.async</td><td class="dotted"><hr /></td><td class="dep-version">0.1.346.0-17112a-alpha</td></tr></table></div></td><td class="codes" style="text-align: center; vertical-align: middle;color: #666;padding-right:20px"><br /><br /><br />(this space intentionally left almost blank)</td></tr><tr><td class="docs"><div class="toc"><a name="toc"><h3>namespaces</h3></a><ul><li><a href="#treguard.algo">treguard.algo</a></li></ul></div></td><td class="codes">&nbsp;</td></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#treguard.algo" name="treguard.algo"><h1 class="project-name">treguard.algo</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><h2>A Distributed System</h2>
 
-<p>An overlay network allows nodes to communicate with each other
-without knowing about the underlying network or how it's connected.</p>
+<h3>Processes</h3>
 
-<p>For example, suppose we have nodes A, B, C and D. Where A is
-connected to B and B is connected to both C and D.</p>
+<p>In a distributed system
+we can define a process
+as a series of
+state transitions.
+These transitions form a
+State Transition System (STS).</p>
 
-<p><graph>
-graph {
-A -- B;
-B -- {C D};
-}
-</graph></p>
+<p>An STS is similar to a
+state machine except that it can have
+an infinite number of states</p>
 
-<p>If A want's to send a message to C or D then it may pass that message
-to B which will then forward that message to the correct recipient.</p>
+<p>We can define such a system as</p>
 
-<p>Similarly if C wants to send a message to either A or D it can also
-pass the message to B who will pass it to the correct recipient.</p>
+<pre><code>(p s) -&gt; s'
+</code></pre>
 
-<p>We can apply this concept to an arbitrarily complex network and can
-guarantee that the message will be delivered to the correct recipient
-providing that a valid path exists.</p>
+<p>Where:</p>
 
-<p>The obvious problem with this is that, for a complex network, we
-can't guarantee that the quickest path is taken. We can solve this by
-laying out the nodes on a coordinate system and using this to pass
-messages to nodes that we think are closest to our target node. To do
-this we assign <a href="http://en.wikipedia.org/wiki/Vivaldi_coordinates">Vivaldi
-Coordinates</a> to
-each node and pass the coordinates around in our messages.</p>
-</td><td class="codes"><pre class="brush: clojure">(ns treguard.overlay)</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(def system (atom []))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn add-process
-  [system process]
-  (swap! system conj process))</pre></td></tr><tr><td class="docs"><h2>Peers</h2>
-</td><td class="codes"></td></tr><tr><td class="docs"><p>As overlay networks are most common in P2P (peer-to-peer) networks we
-will call our nodes peers.</p>
-</td><td class="codes"><pre class="brush: clojure">(defrecord Peer [id mail-in mail-out meta peers])</pre></td></tr><tr><td class="docs"><p><graph>
+<pre><code>p  -&gt; some process
+s  -&gt; initial state
+s' -&gt; next state
+</code></pre>
+
+<p>We then then define the
+running state of a process
+as the following:</p>
+
+<pre><code>if s != s'  -&gt; process is running
+if s  = s   -&gt; process is blocked
+if s  = nil -&gt; process has terminated
+</code></pre>
+
+<p>Once a process is blocked we need to
+wait for some external input
+from the system.
+These take the form of events
+which can put the process into
+some new state.</p>
+
+<pre><code>(e s) -&gt; s'
+</code></pre>
+
+<p>Where:</p>
+
+<pre><code>e  -&gt; some event
+s  -&gt; initial state
+s' -&gt; next state
+</code></pre>
+
+<p>And the states for this are:</p>
+
+<pre><code>if s  = s'  -&gt; process is unchanged
+if s != s'  -&gt; process is no longer blocked
+</code></pre>
+
+<p>In the latter transition
+if a process is blocked it is then waiting or
+if a process is running or waiting it it unchanged.</p>
+
+<p>If a process is waiting then we can put it into the
+running state at any time.
+This is up to a scheduler,
+the default of which is to make
+all waiting processes running.</p>
+
+<p>This gives us the following state machine for a process</p>
+
+<pre><graph>
 digraph {
-node [shape=record];
-peer [ label = "&lt;p&gt; peer|{id|mail-in|mail-out|&lt;m&gt; meta|&lt;ps&gt; peers}" ];
-peers [ label = "&lt;ps&gt; peers|{id1|&lt;p1&gt; peer1}|{id2|&lt;p2&gt; peer2}|..." ];
-meta [ label = "&lt;m&gt; meta|{k1|v1}|{k2|v2}|..." ];
-peer:m -> meta:m;
-peer:ps -> peers:ps;
+running -> running [label="(p s) != s"]
+running -> blocked [label="(p s) = s"]
+running -> terminated [label="(p s) = nil"]
+blocked -> blocked [label="(e s) = s"]
+blocked -> waiting [label="(e s) != s"]
+waiting -> waiting [label="(e s) = s"]
+waiting -> running
 }
-</graph></p>
+</graph></pre>
 
-<p>Each peer has an id, 2 mailboxes (one for outbound messages and one
-for incoming massages), some meta-data and a collection of other
-peers it knows about.</p>
-</td><td class="codes"><pre class="brush: clojure">(defn make-peer
-  ([id mail-in mail-out]
-     (make-peer id mail-in mail-out {}))
-  ([id mail-in mail-out meta]
-     (make-peer id mail-in mail-out meta {}))
-  ([id mail-in mail-out meta peers]
-     (-&gt;Peer id mail-in mail-out meta peers)))</pre></td></tr><tr><td class="docs"><h2>Messages</h2>
-</td><td class="codes"></td></tr><tr><td class="docs"><p>A message is something we want to be delivered to a peer.</p>
-</td><td class="codes"><pre class="brush: clojure">(defrecord Message [id from to meta body])</pre></td></tr><tr><td class="docs"><p><graph>
-digraph {
-node [shape=record];
-message [ label = "message|{id|from|to|&lt;m&gt; meta|&lt;b&gt; body}" ];
-body [ label = "&lt;b&gt; body|..." ];
-meta [ label = "&lt;m&gt; meta|{k1|v1}|{k2|v2}|..." ];
-message:m -> meta:m;
-message:b -> body:b;
-}
-</graph></p>
+<h3>Message Passing</h3>
 
-<p>Each message has a message id, from address, to address, some meta-data,
-and the message body.</p>
-</td><td class="codes"><pre class="brush: clojure">(defn make-message
-  [id from to meta body]
-  (-&gt;Message id from to meta body))</pre></td></tr><tr><td class="docs"><h2>The process</h2>
+<p>In order for processes to communicate with each other
+and the outside world they need to be pass messages around.
+We can do this my modelling a process state as the
+conjunction of
+local state,
+in-bound messages
+and outbound messages</p>
 
-<p><graph>
-digraph {
-"new-message" [label="new-message(peer)"];
-route [label="route(peer,m)"];
-send [label="send(peer,remote,m)"];
-"wait-ack" [label="wait-ack(peer,m)"];
-"ack-msg" [label="ack-msg(peer,m)"];
-"reject-msg" [label="reject-msg(peer,m)"];
-deliver [label="deliver(peer,m)"];
-"wait-deliver-ack" [label="wait-deliver-ack(peer,m,timeout)"];
-put [label="put(peer,m)"];
-get [label="get(peer)"];
-fail [label=fail];
-"new-message" -> route [label=""];
-"wait-ack" -> route [label="(reject? m)"];
-route -> send [label="(and remote? connected?)"];
-route -> send [label="(and remote? (not connected?))"];
-send -> "wait-ack" [label=remote];
-"wait-ack" -> "ack-msg" [label="(ack? m)"];
-send -> "reject-msg" [label="(not remote)"];
-route -> deliver [label="local?"];
-send -> deliver [label=remote];
-"ack-msg" -> deliver [label=""];
-"reject-msg" -> deliver [label=""];
-"wait-deliver-ack" -> deliver [label="(and timeout attempts)"];
-deliver -> "wait-deliver-ack" [label="remote?"];
-deliver -> put [label="local?"];
-deliver -> put [label="remote?"];
-"wait-deliver-ack" -> fail [label="(and timeout (zero? attempts))"];
-}
-</graph></p>
-</td><td class="codes"></td></tr><tr><td class="docs"><h2>Routing a message</h2>
-</td><td class="codes"></td></tr><tr><td class="docs"><p>When a message arrives on mail-out we want to try and route it.</p>
-</td><td class="codes"><pre class="brush: clojure">(add-process system
-  '[:process [:new-message peer]
-    :let [m [:get (:mail-out peer)]]
-    :route peer m])</pre></td></tr><tr><td class="docs"><p>In the simplest case a message arrives which is addressed to youself,
-in this case we just deliver it to ourselves.</p>
-</td><td class="codes"><pre class="brush: clojure">(add-process system
-             '[:process [:route peer m]
-               :let [local? (`local? peer m)]
-               :when local?
-               :deliver peer m])</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn local?
-  [peer m]
-  (= (:to m) (:id peer)))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(def remote? (complement local?))</pre></td></tr><tr><td class="docs"><p>The next simplest case is if we receive a message about a peer we
-already are connected to. In this case we send it to the remote peer
-fir delivery.</p>
-</td><td class="codes"><pre class="brush: clojure">(add-process system
-  '[:process [:route peer m]
-    :let [id (:to m)
-          remote? (`remote? peer m)
-          connected? (`connected? id)]
-    :when (and remote? connected?)
-    :let [remote (get-in peer [:peers id])]
-    :send remote m])</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn connected?
-  [peer id]
-  (get-in peer [:peers id :meta :connected?]))</pre></td></tr><tr><td class="docs"><p>The more complicated case is that we are not able to route to a
-connected peer. In this case we must select one and try to send it to
-that.</p>
-</td><td class="codes"><pre class="brush: clojure">(add-process system
-  '[:process [:route peer m]
-    :let [id (:to m)
-          remote? (not (`local? peer m))
-          connected? (`connected? id)]
-    :when (and remote? (not connected?))
-    :let [remote (select-nearest peer m)]
-    :send peer remote m])</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(declare visited? distance)</pre></td></tr><tr><td class="docs"><p>The nearest peer is the closest connected peer that we have not yet visited.</p>
-</td><td class="codes"><pre class="brush: clojure">(defn select-nearest
-  [peer m]
-  (let [peers (:peers peer)
-        dest (get-in peer [:peers (:to m)])]
-    (-&gt; peers
-        vals
-        (filter #(get-in % [:meta :connected?]))
-        (remove (partial visited? m))
-        (sort (partial distance peer dest))
-        first)))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn visited?
-  [m peer]
-  (let [visited (get-in m [:meta :visited])
-        id (:id peer)]
-    (visited id)))</pre></td></tr><tr><td class="docs"><p>For now we have no distance function</p>
-</td><td class="codes"><pre class="brush: clojure">(defn distance
-  [src dest via]
-  0)</pre></td></tr><tr><td class="docs"><h2>Sending a message</h2>
-</td><td class="codes"></td></tr><tr><td class="docs"><p>Now that we have decided who to send out message to we now need to
-pass it to the peer.</p>
-</td><td class="codes"></td></tr><tr><td class="docs"><p>If for some reason we could not find a peer to send the message to we
-need to reject it as it's not routeable from our point of view.</p>
-</td><td class="codes"><pre class="brush: clojure">(add-process system
-  '[:process [:send peer remote m]
-    :when (not remote)
-    :reject-msg peer m])</pre></td></tr><tr><td class="docs"><p>Otherwise we deliver the message to the remote peer, we also need to
-note that the message visited this peer, then we wait for the message
-to be acknowledged.</p>
-</td><td class="codes"><pre class="brush: clojure">(add-process system
-  '[:process [:send peer remote m]
-    :when remote
-    :let [m (-&gt; m
-                (reply-to peer)
-                (via peer)
-                (state :in-flight))]
-    :deliver remote m
-    :wait-ack peer m])</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn reply-to
-  [m peer]
-  (update-in m [:meta :reply-to] (:id peer)))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn via
-  [m peer]
-  (update-in m [:meta :via] (fnil conj #{}) (:id peer)))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn state
-  [m state]
-  (assoc-in m [:meta :state] state))</pre></td></tr><tr><td class="docs"><p>When a message is acknowledged we can acknowledge the sender</p>
-</td><td class="codes"><pre class="brush: clojure">(add-process system
-  '[:process [:wait-ack peer m]
-    :when (ack? m)
-    :ack-msg peer m])</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn ack?
-  [m]
-  (= :ack (get-in m [:meta :state])))</pre></td></tr><tr><td class="docs"><p>When a message is rejected we need to try to re-route it to someone
-else.</p>
-</td><td class="codes"><pre class="brush: clojure">(add-process system
-  '[:process [:wait-ack peer m]
-    :when (reject? m)
-    :route peer m])</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn reject?
-  [m]
-  (= :reject (get-in m [:meta :state])))</pre></td></tr><tr><td class="docs"><p>Acking a message just involves sending a message to the reply-to
-address with the same message id as original message and <code>:ack</code> in
-the body</p>
-</td><td class="codes"><pre class="brush: clojure">(add-process system
-  '[:process [:ack-msg peer m]
-    :let [reply-to (:reply-to m)
-          msg-id (:id msg)
-          peer-id (:id peer)
-          msg (make-message msg-id peer-id reply-to {} :ack)
-          remote (get-in peer [:peers peer-id])]
-    :deliver mail-in msg])</pre></td></tr><tr><td class="docs"><p>Rejecting a message is the same as an ack but with a body of
-<code>:reject</code> and the via set from the rejected message.</p>
-</td><td class="codes"><pre class="brush: clojure">(add-process system
-  '[:process [:reject-msg peer m]
-    :let [reply-to (:reply-to m)
-          msg-id (:id msg)
-          peer-id (:id peer)
-          meta (select-keys (:meta m) [:via])
-          msg (make-message msg-id peer-id reply-to meta :reject)
-          remote (get-in peer [:peers peer-id])]
-    :deliver remote msg])</pre></td></tr><tr><td class="docs"><h2>Delivering messages</h2>
-</td><td class="codes"></td></tr><tr><td class="docs"><p>Message delivery is the act of passing messages between peers this
-is distinct from sending a message as we only need to gaurentee that
-the message arrived at the peer.</p>
-</td><td class="codes"></td></tr><tr><td class="docs"><p>Again we have the simple case where we wish to deliver the message to
-ourselves. In this case we just put the message on our incomming
-mailbox.</p>
-</td><td class="codes"><pre class="brush: clojure">(add-process system
-             '[:process [:deliver peer m]
-               :let [local? (`local? peer m)]
-               :when local?
-               :let [mail-in (:mail-in peer)]
-               :put mail-in m])</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn set-meta
-  ([m k v]
-     (assoc-in m [:meta k] v)))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn get-meta
-  [m k]
-  (get-in m [:meta k]))</pre></td></tr><tr><td class="docs"><p>Alternatively we need to pass it to a remote peer. And wait for it to
-be acknowledged.</p>
-</td><td class="codes"><pre class="brush: clojure">(add-process system
-             '[:process [:deliver peer m]
-               :let [remote? (`remote? peer m)]
-               :when remote?
-               :let [mail-in (:mail-in peer)
-                     ttl 5000           ; FIXME: make this configurable
-                     attempts 5
-                     m (-&gt; m
-                           (set-meta :timeout ttl)
-                           (set-meta :attempts attempts))
-                     timeout [:timeout ttl]]
-               :put mail-in m
-               :wait-deliver-ack peer m timeout])</pre></td></tr><tr><td class="docs"><p>If a message is ack'd we can cancel the timeout and drop the message</p>
-</td><td class="codes"><pre class="brush: clojure">(add-process system
-             '[:process [:wait-deliver-ack peer m timeout]
-               :when (ack? m)
-               :cancel-timeout timeout])</pre></td></tr><tr><td class="docs"><p>If we timeout we can retry the message</p>
-</td><td class="codes"><pre class="brush: clojure">(add-process system
-             '[:process [:wait-deliver-ack peer m timeout]
-               :let [attempts (get-meta m :attempts)]
-               :when (and timeout attempts)
-               :let [m (set-meta m :attempts (dec attempts))]
-               :deliver peer m])</pre></td></tr><tr><td class="docs"><p>Otherwise we fail</p>
-</td><td class="codes"><pre class="brush: clojure">(add-process system
-             '[:process [:wait-deliver-ack peer m timeout]
-               :let [attempts (get-meta m :attempts)]
-               :when (and timeout (zero? attempts))
-               :fail {:err :timeout :message m :peer peer}])</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#treguard.utils.dot" name="treguard.utils.dot"><h1 class="project-name">treguard.utils.dot</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(ns treguard.utils.dot
-  (:require [dorothy.core :as dot]))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn get-process-def
-  [process]
-  (second process))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn inbound?
-  [name process]
-  (let [outbound (into #{} (filter keyword? process))]
-    (outbound name)))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn get-condition
-  [process]
-  (second (drop-while #(not (= :when %)) process)))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn get-edges
-  [system node]
-  (let [name (first node)
-        inbound (filter (partial inbound? name) system)
-        nodes (map (juxt second get-condition) inbound)]
-    (map (fn [[parent cond]]
-           [(first parent) name {:label (str cond)}])
-         nodes)))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(def global-nodes
-  [[:put {:label &quot;put(peer,m)&quot;}]
-   [:get {:label &quot;get(peer)&quot;}]
-   [:fail {:label &quot;fail&quot;}]])</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn system-&gt;dot
-  [system]
-  (let [nodes (-&gt;&gt; system
-                   (map get-process-def)
-                   distinct
-                   (map (fn [[n &amp; args]]
-                          (let [arg-list (apply str (interpose &quot;,&quot; args))]
-                            [n {:label (str (name n) &quot;(&quot; arg-list &quot;)&quot;)}]))))
-        nodes (concat nodes global-nodes)
-        edges (-&gt;&gt; nodes
-                   (mapcat (partial get-edges system)))
-        graph (dot/digraph (concat nodes edges))]
-    (dot/dot graph)))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr></table><div class="footer">Generated by <a href="https://github.com/gdeer81/marginalia">Marginalia</a>.&nbsp;&nbsp;Syntax highlighting provided by Alex Gorbatchev's <a href="http://alexgorbatchev.com/SyntaxHighlighter/">SyntaxHighlighter</a><div id="floating-toc"><ul><li class="floating-toc-li" id="floating-toc_treguard.overlay">treguard.overlay</li><li class="floating-toc-li" id="floating-toc_treguard.utils.dot">treguard.utils.dot</li></ul></div></div><script type="text/javascript">SyntaxHighlighter.defaults['gutter'] = false;
+<pre><code>S -&gt; (ctx, in, out)
+</code></pre>
+
+<p>Where</p>
+
+<pre><code>S   -&gt; the state
+ctx -&gt; the local state (or context)
+in  -&gt; a queue of inbound messages
+out -&gt; a queue of outbound messages
+</code></pre>
+
+<p>A process advances either by
+modifying it's context (as above)
+taking a message from the inbound queue
+or adding a message to the outbound queue.</p>
+
+<h3>Systems</h3>
+
+<p>A system is a collection of processes
+that collaborate to provide
+some service or services.
+We define a systems as a configuration of
+processes and their states.</p>
+
+<pre><code>C -&gt; ([P1 S1], [P2 S2], ... , [Pn Sn])
+</code></pre>
+
+<p>A configuration can advance in one of the following ways:</p>
+
+<ul>
+<li>A waiting process is marked as running</li>
+<li>A running process is executed</li>
+<li>A message is taken from an outbound queue and deivered to an
+inbound queue</li>
+<li>A process with an non empty inbound queue is unblocked</li>
+</ul>
+
+<p>Apart from message deivery
+each of the above steps are independant
+and therefore can be executed in parallel.
+We can therefore divide the system into two steps
+the parallel step and the sequential step:</p>
+
+<pre><code>(sqs C) -&gt; C'
+(prs C) -&gt; C'
+</code></pre>
+
+<p>Where:</p>
+
+<pre><code>C   -&gt; a configuration
+C'  -&gt; a new configuration
+sqs -&gt; the sequential step
+prs -&gt; the parallel step
+</code></pre>
+
+<p>We can then avance the system by interleaving the
+sequential and parallel steps:</p>
+
+<pre><code>(prs (sqs C)) -&gt; C'
+</code></pre>
+
+<p>Given this model we can define a execution as
+the sequence of configurations
+of a given system</p>
+</td><td class="codes"><pre class="brush: clojure">(ns treguard.algo)</pre></td></tr><tr><td class="docs"><h2>The Process</h2>
+</td><td class="codes"></td></tr><tr><td class="docs"><p>We defined a process as a state <code>s</code>
+and a transition function <code>p</code>.
+We later defined defined the state as
+a local context,
+in inbound queue and
+and outbound queue.</p>
+</td><td class="codes"></td></tr><tr><td class="docs"><p>More generally a process defines a
+protocol where we can either
+run the process,
+enqueue a message to the inbound queue or
+dequeue a message from the outbound queue.</p>
+</td><td class="codes"><pre class="brush: clojure">(defprotocol IProcess
+  (run [p] &quot;Run the process,
+            returns the new process state or nil&quot;)
+  (enqueue [p m] &quot;Enqueue an inbound message,
+                  returns the new process state&quot;)
+  (dequeue [p] &quot;Dequeue and outbound message,
+                returns a tuple the new process state and an oubound message (or nil)&quot;))</pre></td></tr><tr><td class="docs"><p>Concretely we have
+a process that is made up of:</p>
+
+<ul>
+<li>a function to run the process</li>
+<li>the local context</li>
+<li>the inbound queue</li>
+<li>the outbound queue</li>
+</ul>
+
+<p>Where the function used takes
+the local context and a message in (or nil)
+and returns
+the new context and a message out (or nil)</p>
+
+<pre><code>(f ctx m-in) -&gt; [ctx' m-out]
+</code></pre>
+</td><td class="codes"><pre class="brush: clojure">(defrecord Proc [f ctx in out]
+  IProcess
+  (run [p]
+    (let [m-in (peek in)]
+      (when-let [res (f ctx m-in)]
+        (let [[ctx' m-out] res]
+          (-&gt; (if m-out (update-in p [:out] conj m-out) p)
+              (assoc :ctx ctx')
+              (update-in [:in] pop))))))
+  (enqueue [p m]
+    (update-in p [:in] conj m))
+  (dequeue [p]
+    (let [m (peek out)
+          p' (update-in p [:out] pop)]
+      [p' m])))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn proc
+  ([f ctx]
+     (let [in clojure.lang.PersistentQueue/EMPTY
+           out clojure.lang.PersistentQueue/EMPTY]
+       (proc f ctx in out)))
+  ([f ctx in out]
+     {:pre [(ifn? f)
+            (coll? in)
+            (coll? out)]}
+     (-&gt;Proc f ctx in out)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(comment
+;;  LocalWords:  STS pre ctx ns treguard algo
+)</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr></table><div class="footer">Generated by <a href="https://github.com/gdeer81/marginalia">Marginalia</a>.&nbsp;&nbsp;Syntax highlighting provided by Alex Gorbatchev's <a href="http://alexgorbatchev.com/SyntaxHighlighter/">SyntaxHighlighter</a><div id="floating-toc"><ul><li class="floating-toc-li" id="floating-toc_treguard.algo">treguard.algo</li></ul></div></div><script type="text/javascript">SyntaxHighlighter.defaults['gutter'] = false;
 SyntaxHighlighter.all();
 
 // hackity hack
