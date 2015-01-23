@@ -75,20 +75,23 @@
 (defn run-proc-1
   [c]
   (let [[pid [p s]] (first
-                     (remove (fn [[pid [p s]]]
-                               (let [[p' m] (dequeue p)]
-                                 m))
+                     (filter (fn [[pid [p s]]]
+                               (#{:running :waiting :blocked} s))
                              (listp c)))]
-    (if p
+    (if (= :running s)
       (let [p' (run p)]
         (updatep c pid p'))
-      c)))
+      (if p
+        (updatep c pid p)
+        c))))
 
 (defn terminated?
   [s]
   (every? (fn [[pid [p s]]]
             (= :terminated s))
           (ps s)))
+
+(def running? (complement terminated?))
 
 (facts "about a single process systems"
        (let [gcd (fn [ctx in]
@@ -105,8 +108,8 @@
              s (->Sys c broadcast-out-in-1 run-proc-1)
              p (enqueue (proc gcd nil) {:x 1071 :y 462})
              [s pid] (exec s p)
-             exec (iterate step s)
-             res (first (filter terminated? exec))
+             e (take-while running? (iterate step s))
+             res (last e)
              [sys [p s]] (kill res pid)]
          (let [{:keys [x y]} (:ctx p)]
              (fact "x = y at result"
