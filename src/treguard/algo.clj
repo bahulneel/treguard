@@ -325,28 +325,28 @@
 ;; </graph></pre>
 (defn process-state
   [s p p']
-  (let [[min mout] (if p (pending p) [0 0])
-        [min' mout'] (if p' (pending p') [0 0])]
-    (match [s   [p min mout] [p' min' mout']      ]
+  (let [[min' mout'] (if p' (pending p') [0 0])]
+    (match [s        p       [p' min' mout']]
+           ;;
            ;; s = nil -> waiting
-           [nil _            _                    ] :waiting
-
+           [nil      _       _                    ] :waiting
+           ;;
            ;; outbound messages -> waiting
-           [_   _            [_ _ (m :guard pos?)]] :waiting
-
+           [_        _       [_ _ (m :guard pos?)]] :waiting
+           ;;
            ;; s = waiting -> running
            [:waiting _       _                    ] :running
+           ;;
            ;; s = running /\ p' = nil -> treminated
-
            [:running _       [nil _ _]            ] :terminated
-
+           ;;
            ;; s = running /\ p != p' -> running
            ;; s = running /\ p == p' -> blocked
-           [:running [p _ _] [p' _ _]             ] (if (= p p') :blocked :running)
-
+           [:running p       [p' _ _]             ] (if (= p p') :blocked :running)
+           ;;
            ;; s = blocked /| inbound messages -> waiting
            [:blocked _       [_ (m :guard pos?) _]] :waiting
-
+           ;;
            ;; state unchanged
            :else s)))
 
