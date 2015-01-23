@@ -2927,7 +2927,7 @@ if s != s'  -&gt; process is no longer blocked
 
 <p>In the latter transition
 if a process is blocked it is then waiting or
-if a process is running or waiting it it unchanged.</p>
+if a process is running or waiting it is unchanged.</p>
 
 <p>If a process is waiting then we can put it into the
 running state at any time.
@@ -2952,8 +2952,8 @@ waiting -> running
 <h3>Message Passing</h3>
 
 <p>In order for processes to communicate with each other
-and the outside world they need to be pass messages around.
-We can do this my modelling a process state as the
+and the outside world they need to pass messages around.
+We can do this by modelling a process state as the
 conjunction of
 local state,
 in-bound messages
@@ -2980,10 +2980,14 @@ or adding a message to the outbound queue.</p>
 <p>A system is a collection of processes
 that collaborate to provide
 some service or services.
-We define a systems as a configuration of
-processes and their states.</p>
+At any one point in time we can define
+the state of a system as a configuration.
+This a collection of
+processes,
+their states and
+their execution states</p>
 
-<pre><code>C -&gt; ([P1 S1], [P2 S2], ... , [Pn Sn])
+<pre><code>C -&gt; ([P1 S1 E1], [P2 S2 E2], ... , [Pn Sn En])
 </code></pre>
 
 <p>A configuration can advance in one of the following ways:</p>
@@ -2991,14 +2995,14 @@ processes and their states.</p>
 <ul>
 <li>A waiting process is marked as running</li>
 <li>A running process is executed</li>
-<li>A message is taken from an outbound queue and deivered to an
+<li>A message is taken from an outbound queue and delivered to an
 inbound queue</li>
 <li>A process with an non empty inbound queue is unblocked</li>
 </ul>
 
-<p>Apart from message deivery
-each of the above steps are independant
-and therefore can be executed in parallel.
+<p>Apart from message delivery
+each of the above steps are independent
+and so can be executed in parallel.
 We can therefore divide the system into two steps
 the parallel step and the sequential step:</p>
 
@@ -3014,57 +3018,71 @@ sqs -&gt; the sequential step
 prs -&gt; the parallel step
 </code></pre>
 
-<p>We can then avance the system by interleaving the
+<p>We can then advance the system by interleaving the
 sequential and parallel steps:</p>
 
-<pre><code>(prs (sqs C)) -&gt; C'
+<pre><code>(prs (sqs C))  -&gt; C'
+(prs (sqs C')) -&gt; C''
 </code></pre>
 
 <p>Given this model we can define a execution as
-the sequence of configurations
-of a given system</p>
+the (possibly infinite) sequence of configurations
+of a given system.</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns treguard.algo)</pre></td></tr><tr><td class="docs"><h2>The Process</h2>
-</td><td class="codes"></td></tr><tr><td class="docs"><p>We defined a process as a state <code>s</code>
+</td><td class="codes"></td></tr><tr><td class="docs"><p>We previously defined a process as
+a state <code>s</code>
 and a transition function <code>p</code>.
-We later defined defined the state as
+We further defined the state as
 a local context,
-in inbound queue and
-and outbound queue.</p>
-</td><td class="codes"></td></tr><tr><td class="docs"><p>More generally a process defines a
-protocol where we can either
-run the process,
-enqueue a message to the inbound queue or
-dequeue a message from the outbound queue.</p>
+an inbound queue and
+an outbound queue.</p>
+</td><td class="codes"></td></tr><tr><td class="docs"><p>We can define a general process as a
+protocol where we can either</p>
+
+<ul>
+<li>run the process,</li>
+<li>enqueue a message to the inbound queue or</li>
+<li>dequeue a message from the outbound queue.</li>
+</ul>
 </td><td class="codes"><pre class="brush: clojure">(defprotocol IProcess
   (run [p] &quot;Run the process,
             returns the new process state or nil&quot;)
   (enqueue [p m] &quot;Enqueue an inbound message,
                   returns the new process state&quot;)
   (dequeue [p] &quot;Dequeue and outbound message,
-                returns a tuple the new process state and an oubound message (or nil)&quot;))</pre></td></tr><tr><td class="docs"><p>Concretely we have
+                returns a tuple the new process state and an oubound message (or nil)&quot;))</pre></td></tr><tr><td class="docs"><p>More concretely we have
 a process that is made up of:</p>
 
 <ul>
-<li>a function to run the process</li>
+<li>a transition function</li>
 <li>the local context</li>
 <li>the inbound queue</li>
 <li>the outbound queue</li>
 </ul>
 
-<p>Where the function used takes
-the local context and a message in (or nil)
+<p>Where the transition function takes
+the local context and
+a message in
 and returns
-the new context and a message out (or nil)</p>
+the new context and
+a message out
+or nil if the process has terminated.</p>
 
 <pre><code>(f ctx m-in) -&gt; [ctx' m-out]
 </code></pre>
+
+<p>If we don't have a message (in or out) we
+use nil.</p>
 </td><td class="codes"><pre class="brush: clojure">(defrecord Proc [f ctx in out]
   IProcess
   (run [p]
     (let [m-in (peek in)]
       (when-let [res (f ctx m-in)]
         (let [[ctx' m-out] res]
-          (-&gt; (if m-out (update-in p [:out] conj m-out) p)
+          (-&gt; (if m-out
+                (update-in p [:out] conj m-out)
+                p)
               (assoc :ctx ctx')
               (update-in [:in] pop))))))
   (enqueue [p m]
@@ -3084,7 +3102,7 @@ the new context and a message out (or nil)</p>
             (coll? out)]}
      (-&gt;Proc f ctx in out)))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(comment
-;;  LocalWords:  STS pre ctx ns treguard algo
+;;  LocalWords:  STS pre ctx ns treguard algo Pn
 )</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr></table><div class="footer">Generated by <a href="https://github.com/gdeer81/marginalia">Marginalia</a>.&nbsp;&nbsp;Syntax highlighting provided by Alex Gorbatchev's <a href="http://alexgorbatchev.com/SyntaxHighlighter/">SyntaxHighlighter</a><div id="floating-toc"><ul><li class="floating-toc-li" id="floating-toc_treguard.algo">treguard.algo</li></ul></div></div><script type="text/javascript">SyntaxHighlighter.defaults['gutter'] = false;
 SyntaxHighlighter.all();
 
