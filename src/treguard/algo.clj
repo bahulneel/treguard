@@ -311,6 +311,19 @@
 
 ;; We can also define the standard
 ;; process state transition function
+
+;; <pre><graph>
+;; digraph {
+;; start [shape="point"]
+;; start -> waiting [label="s = nil"]
+;; waiting -> waiting [label="outbound > 0"]
+;; waiting -> running
+;; running -> terminated [label="p' = nil"]
+;; running -> running [label="p != p'"]
+;; running -> blocked [label="p = p'"]
+;; blocked -> waiting [label="inbound > 0"]
+;; }
+;; </graph></pre>
 (defn process-state
   [s p p']
   (let [[min mout] (if p (pending p) [0 0])
