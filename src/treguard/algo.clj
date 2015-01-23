@@ -66,6 +66,7 @@
 ;;
 ;; <pre><graph>
 ;; digraph {
+;; start [shape="point"]
 ;; running -> running [label="(p s) != s"]
 ;; running -> blocked [label="(p s) = s"]
 ;; running -> terminated [label="(p s) = nil"]
@@ -73,6 +74,7 @@
 ;; blocked -> waiting [label="(e s) != s"]
 ;; waiting -> waiting [label="(e s) = s"]
 ;; waiting -> running
+;; start -> waiting
 ;; }
 ;; </graph></pre>
 ;;
@@ -146,7 +148,8 @@
 ;; the (possibly infinite) sequence of configurations
 ;; of a given system.
 
-(ns treguard.algo)
+(ns treguard.algo
+  (:require [clojure.core.match :refer [match]]))
 
 ;; ## The Process
 
@@ -161,16 +164,18 @@
 ;; We can define a general process as a
 ;; protocol where we can either:
 ;;
-;;  - run the process
-;;  - enqueue a message to the inbound queue
-;;  - dequeue a message from the outbound queue
+;; - run the process
+;; - enqueue a message to the inbound queue
+;; - dequeue a message from the outbound queue
+;; - get the size of the queues
 (defprotocol IProcess
   (run [p] "Run the process,
             returns the new process state or nil")
   (enqueue [p m] "Enqueue an inbound message,
                   returns the new process state")
   (dequeue [p] "Dequeue and outbound message,
-                returns a tuple the new process state and an oubound message (or nil)"))
+                returns a tuple the new process state and an oubound message (or nil)")
+  (pending [p] "Returns a tuple of the number of waiting in and out messages"))
 
 ;; More concretely we have
 ;; a process that is made up of:
@@ -209,7 +214,9 @@
   (dequeue [p]
     (let [m (peek out)
           p' (update-in p [:out] pop)]
-      [p' m])))
+      [p' m]))
+  (pending [p]
+    [(count in) (count out)]))
 
 (defn proc
   ([f ctx]
@@ -236,7 +243,7 @@
 ;; - remove a process (kill)
 ;; - list processes (ps)
 ;; - run the system 1 step
-(defprotocol ISys
+(defprotocol ISystem
   (exec [s p] "Execute a process, returns the new configuration and a
              process id")
   (kill [s pid] "Kill a process, returns the new configuration and the
@@ -244,27 +251,92 @@
   (ps [s] "List all processes")
   (step [s] "Run the system one stepm, returns the new confiuration"))
 
-;; Concretely, as system is made up of
+;; We can also generalise the configuration
+;; to a protocol that alows us to:
+;;
+;; - add a process
+;; - remove a process
+;; - get a process with it's state
+;; - update a process
+;; - list all processes
+(defprotocol IConfig
+  (addp [c pid p] "Add a process")
+  (removep [c pid] "Removes a process")
+  (getp [c pid] "Returns a tuple of a process and it's state")
+  (updatep [c pid p'] "Updates a process")
+  (listp [c] "Lists all processes"))
+
+;; Concretely, a system is made up of
 ;;
 ;; - a configuration
 ;; - a sequential step function
 ;; - a parallel step function
 (defrecord Sys [c sqs prs]
-  ISys
+  ISystem
   (exec [s p]
     (let [pid (java.util.UUID/randomUUID)
-          ps [p :waiting]
-          s' (update-in s [:c] assoc pid ps)]
+          s' (update-in s [:c] addp pid p)]
       [s' pid]))
   (kill [s pid]
-    (let [ps (get c pid)
-          s' (update-in s [:c] dissoc pid)]
+    (let [ps (getp c pid)
+          s' (update-in s [:c] removep pid)]
       [s' ps]))
   (ps [s]
-    c)
+    (listp c))
   (step [s]
     (let [c' (-> c sqs prs)]
       (assoc s :c c'))))
+
+;; And concretely a configuration is made up of
+;;
+;; - a process map
+;; - a state transition fn
+(defrecord Conf [m state]
+  IConfig
+  (addp [c pid p]
+    (let [s (state nil nil p)
+          p-s [p s]]
+      (update-in c [:m] assoc pid p-s)))
+  (removep [c pid]
+    (update-in c [:m] dissoc pid))
+  (getp [c pid]
+    (get m pid))
+  (updatep [c pid p']
+    (let [[p s] (get m pid)
+          s' (state s p p')
+          p-s' [(or p' p) s']]
+      (update-in c [:m] assoc pid p-s')))
+  (listp [_]
+    m))
+
+;; We can also define the standard
+;; process state transition function
+(defn process-state
+  [s p p']
+  (let [[min mout] (if p (pending p) [0 0])
+        [min' mout'] (if p' (pending p') [0 0])]
+    (match [s   [p min mout] [p' min' mout']      ]
+           ;; s = nil -> waiting
+           [nil _            _                    ] :waiting
+
+           ;; outbound messages -> waiting
+           [_   _            [_ _ (m :guard pos?)]] :waiting
+
+           ;; s = waiting -> running
+           [:waiting _       _                    ] :running
+           ;; s = running /\ p' = nil -> treminated
+
+           [:running _       [nil _ _]            ] :terminated
+
+           ;; s = running /\ p != p' -> running
+           ;; s = running /\ p == p' -> blocked
+           [:running [p _ _] [p' _ _]             ] (if (= p p') :blocked :running)
+
+           ;; s = blocked /| inbound messages -> waiting
+           [:blocked _       [_ (m :guard pos?) _]] :waiting
+
+           ;; state unchanged
+           :else s)))
 
 (comment
 ;;  LocalWords:  STS pre ctx ns treguard algo Pn

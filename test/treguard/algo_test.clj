@@ -59,16 +59,16 @@
                           (let [[pid [p s]] ps
                                 [p' m] (dequeue p)]
                             m))
-                        c))]
+                        (listp c)))]
     (if ps-out
       (let[[pid-out [p-out s-out]] ps-out
            [p-out' mout] (dequeue p-out)
-           c (assoc c pid-out [p-out' s-out])
+           c (updatep c pid-out p-out')
            c' (reduce (fn [c' [pid [p s]]]
                         (let [p' (enqueue p mout)]
-                          (assoc c' pid [p' s])))
-                      {}
-                      c)]
+                          (updatep c' pid p')))
+                      c
+                      (listp c))]
         c')
       c)))
 
@@ -78,12 +78,10 @@
                      (remove (fn [[pid [p s]]]
                                (let [[p' m] (dequeue p)]
                                  m))
-                             c))]
+                             (listp c)))]
     (if p
       (let [p' (run p)]
-        (if p'
-          (assoc c pid [p' s])
-          (assoc c pid [p :terminated])))
+        (updatep c pid p'))
       c)))
 
 (defn terminated?
@@ -103,7 +101,8 @@
                                      (assoc in :x (- x y))
                                      (assoc in :y (- y x)))]
                            [in out])))))
-             s (->Sys {} broadcast-out-in-1 run-proc-1)
+             c (->Conf {} process-state)
+             s (->Sys c broadcast-out-in-1 run-proc-1)
              p (enqueue (proc gcd nil) {:x 1071 :y 462})
              [s pid] (exec s p)
              exec (iterate step s)
