@@ -233,7 +233,7 @@
 ;; We earlier defined a system as
 ;; existing in some configuration `C`
 ;; which is the collection of the state
-;; of all processes in that systems.
+;; of all processes in that system.
 
 ;; We can generalise this to a protocol
 ;; that allows us to:
@@ -248,10 +248,10 @@
   (kill [s pid] "Kill a process, returns the new configuration and the
               killed process")
   (ps [s] "List all processes")
-  (step [s] "Run the system one stepm, returns the new confiuration"))
+  (step [s] "Run the system one step, returns the new configuration"))
 
 ;; We can also generalise the configuration
-;; to a protocol that alows us to:
+;; to a protocol that allows us to:
 ;;
 ;; - add a process
 ;; - remove a process
@@ -344,7 +344,7 @@
            ;; s = running /\ p == p' -> blocked
            [:running p       [p' _ _]             ] (if (= p p') :blocked :running)
            ;;
-           ;; s = blocked /| inbound messages -> waiting
+           ;; s = blocked /\ inbound messages -> waiting
            [:blocked _       [_ (m :guard pos?) _]] :waiting
            ;;
            ;; state unchanged
