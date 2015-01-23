@@ -338,6 +338,12 @@
            ;; state unchanged
            :else s)))
 
+(def default-configuration (->Conf {} process-state))
+
+(defn system
+  [c sqs prs]
+  (->Sys c sqs prs))
+
 (comment
 ;;  LocalWords:  STS pre ctx ns treguard algo Pn
 )

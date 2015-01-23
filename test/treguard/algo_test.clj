@@ -104,8 +104,9 @@
                                      (assoc in :x (- x y))
                                      (assoc in :y (- y x)))]
                            [in out])))))
-             c (->Conf {} process-state)
-             s (->Sys c broadcast-out-in-1 run-proc-1)
+             s (system default-configuration
+                       broadcast-out-in-1
+                       run-proc-1)
              p (enqueue (proc gcd nil) {:x 1071 :y 462})
              [s pid] (exec s p)
              e (take-while running? (iterate step s))
