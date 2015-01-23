@@ -147,7 +147,6 @@
 ;; Given this model we can define a execution as
 ;; the (possibly infinite) sequence of configurations
 ;; of a given system.
-
 (ns treguard.algo
   (:require [clojure.core.match :refer [match]]))
 
@@ -236,8 +235,8 @@
 ;; which is the collection of the state
 ;; of all processes in that systems.
 
-;; We can generailse this to a protocol
-;; that alows us to:
+;; We can generalise this to a protocol
+;; that allows us to:
 ;;
 ;; - add a process (exec)
 ;; - remove a process (kill)
@@ -269,9 +268,8 @@
 ;; Concretely, a system is made up of
 ;;
 ;; - a configuration
-;; - a sequential step function
-;; - a parallel step function
-(defrecord Sys [c sqs prs]
+;; - a step function
+(defrecord Sys [c stepf]
   ISystem
   (exec [s p]
     (let [pid (java.util.UUID/randomUUID)
@@ -284,13 +282,13 @@
   (ps [s]
     (listp c))
   (step [s]
-    (let [c' (-> c sqs prs)]
+    (let [c' (stepf c)]
       (assoc s :c c'))))
 
 ;; And concretely a configuration is made up of
 ;;
 ;; - a process map
-;; - a state transition fn
+;; - a state transition function
 (defrecord Conf [m state]
   IConfig
   (addp [c pid p]
@@ -354,8 +352,8 @@
 (def default-configuration (->Conf {} process-state))
 
 (defn system
-  [c sqs prs]
-  (->Sys c sqs prs))
+  [c stepf]
+  (->Sys c stepf))
 
 (comment
 ;;  LocalWords:  STS pre ctx ns treguard algo Pn

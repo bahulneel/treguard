@@ -105,8 +105,8 @@
                                      (assoc in :y (- y x)))]
                            [in out])))))
              s (system default-configuration
-                       broadcast-out-in-1
-                       run-proc-1)
+                       (comp broadcast-out-in-1
+                             run-proc-1))
              p (enqueue (proc gcd nil) {:x 1071 :y 462})
              [s pid] (exec s p)
              e (take-while running? (iterate step s))
