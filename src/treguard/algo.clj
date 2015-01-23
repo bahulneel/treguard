@@ -222,6 +222,50 @@
             (coll? out)]}
      (->Proc f ctx in out)))
 
+;; ## The System
+
+;; We earlier defined a system as
+;; existing in some configuration `C`
+;; which is the collection of the state
+;; of all processes in that systems.
+
+;; We can generailse this to a protocol
+;; that alows us to:
+;;
+;; - add a process (exec)
+;; - remove a process (kill)
+;; - list processes (ps)
+;; - run the system 1 step
+(defprotocol ISys
+  (exec [s p] "Execute a process, returns the new configuration and a
+             process id")
+  (kill [s pid] "Kill a process, returns the new configuration and the
+              killed process")
+  (ps [s] "List all processes")
+  (step [s] "Run the system one stepm, returns the new confiuration"))
+
+;; Concretely, as system is made up of
+;;
+;; - a configuration
+;; - a sequential step function
+;; - a parallel step function
+(defrecord Sys [c sqs prs]
+  ISys
+  (exec [s p]
+    (let [pid (java.util.UUID/randomUUID)
+          ps [p :waiting]
+          s' (update-in s [:c] assoc pid ps)]
+      [s' pid]))
+  (kill [s pid]
+    (let [ps (get c pid)
+          s' (update-in s [:c] dissoc pid)]
+      [s' ps]))
+  (ps [s]
+    c)
+  (step [s]
+    (let [c' (-> c sqs prs)]
+      (assoc s :c c'))))
+
 (comment
 ;;  LocalWords:  STS pre ctx ns treguard algo Pn
 )
