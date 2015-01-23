@@ -21,7 +21,7 @@
 ;;     s  -> initial state
 ;;     s' -> next state
 ;;
-;; We then then define the
+;; We can then define the
 ;; running state of a process
 ;; as the following:
 ;;
