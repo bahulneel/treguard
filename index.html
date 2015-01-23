@@ -3192,6 +3192,7 @@ start [shape="point"]
 start -> waiting [label="s = nil"]
 waiting -> waiting [label="outbound > 0"]
 waiting -> running
+running -> waiting [label="outbound > 0"]
 running -> terminated [label="p' = nil"]
 running -> running [label="p != p'"]
 running -> blocked [label="p = p'"]
@@ -3200,22 +3201,28 @@ blocked -> waiting [label="inbound > 0"]
 </graph></pre>
 </td><td class="codes"><pre class="brush: clojure">(defn process-state
   [s p p']
-  (let [[min mout] (if p (pending p) [0 0])
-        [min' mout'] (if p' (pending p') [0 0])]
-    (match [s   [p min mout] [p' min' mout']      ]
+  (let [[min' mout'] (if p' (pending p') [0 0])]
+    (match [s        p       [p' min' mout']]
+           ;;
            ;; s = nil -&gt; waiting
-           [nil _            _                    ] :waiting
+           [nil      _       _                    ] :waiting
+           ;;
            ;; outbound messages -&gt; waiting
-           [_   _            [_ _ (m :guard pos?)]] :waiting
+           [_        _       [_ _ (m :guard pos?)]] :waiting
+           ;;
            ;; s = waiting -&gt; running
            [:waiting _       _                    ] :running
+           ;;
            ;; s = running /\ p' = nil -&gt; treminated
            [:running _       [nil _ _]            ] :terminated
+           ;;
            ;; s = running /\ p != p' -&gt; running
            ;; s = running /\ p == p' -&gt; blocked
-           [:running [p _ _] [p' _ _]             ] (if (= p p') :blocked :running)
+           [:running p       [p' _ _]             ] (if (= p p') :blocked :running)
+           ;;
            ;; s = blocked /| inbound messages -&gt; waiting
            [:blocked _       [_ (m :guard pos?) _]] :waiting
+           ;;
            ;; state unchanged
            :else s)))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(def default-configuration (-&gt;Conf {} process-state))</pre></td></tr><tr><td class="docs">
