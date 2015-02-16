@@ -129,3 +129,23 @@
   [task]
   {:pre [(task? task)]}
   (-exec task))
+
+(defmacro defaction
+  [name type args & body]
+  (let [[pred effect] (if (= type :in)
+                        [nil (first body)]
+                        body)
+        spec# {:name (keyword name)
+               :type type
+               :args args
+               :pred pred
+               :effect effect}]
+    `(def ~name (action ~spec#))))
+
+(defmacro defauto
+  [name args cons actions invarients]
+  (let [spec# {:name (keyword name)
+               :constructor `(fn ~args ~cons)
+               :actions actions
+               :invarients invarients}]
+    `(def ~name (automaton ~spec#))))
