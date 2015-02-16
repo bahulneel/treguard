@@ -1,4 +1,5 @@
-(ns treguard.automaton)
+(ns treguard.automaton
+  (:require [clojure.data :as d]))
 
 (declare action? enable task)
 
@@ -18,10 +19,10 @@
                       count)]
       (zero? failed)))
   (-tasks [_ input state]
-    (keep identity (mapcat (fn [action]
-                             (when-let [env (enable action input state)]
-                               (map #(task action % state) env)))
-                           actions))))
+    (keep (fn [action]
+            (when-let [env (enable action input state)]
+              (task action env state)))
+          actions)))
 
 (defn automaton
   [{:keys [name constructor actions invarients] :as spec}]
@@ -58,13 +59,21 @@
 (defrecord Action [type name args pred effect]
   IAction
   (-enable [_ input state]
-    (if pred
-      (pred state args)
-      (when (= :in type)
-        (let [[iname & iargs] input]
-          (when (and (= iname name)
-                     (= (count iargs) (count args)))
-            [(zipmap args iargs)])))))
+    (let [env (into {} (map (juxt identity (partial get state)) args))]
+      (if pred
+        (when-let [env' (pred env state)]
+          (merge env env'))
+        (when (and input (= :in type))
+          (let [[iname & iargs] input
+                env' (zipmap args iargs)]
+            (when (and (= iname name)
+                       (= (count iargs) (count args))
+                       (->> env'
+                            (d/diff env)
+                            first
+                            vals
+                            (every? nil?)))
+              env'))))))
   (-run [_ env state]
     (let [msg (when-not (= :in type)
                 (reduce (fn [m arg]
@@ -93,7 +102,7 @@
   {:pre [(action? action)
          (or (nil? input) (sequential? input))
          (map? state)]
-   :post [(or (every? map? %) (nil? %))]}
+   :post [(or (map? %) (nil? %))]}
   (-enable action input state))
 
 (defn run
@@ -137,15 +146,19 @@
                         body)
         spec# {:name (keyword name)
                :type type
-               :args args
-               :pred pred
-               :effect effect}]
+               :args (mapv keyword args)
+               :pred (when pred `(fn [~'env ~'state]
+                                   (let [{:keys ~args} ~'env]
+                                     (~@pred))))
+               :effect `(fn [~'env ~'state]
+                          (let [{:keys ~args} ~'env]
+                            (~@effect)))}]
     `(def ~name (action ~spec#))))
 
 (defmacro defauto
-  [name args cons actions invarients]
+  [name cons actions invarients]
   (let [spec# {:name (keyword name)
-               :constructor `(fn ~args ~cons)
+               :constructor `(fn ~cons)
                :actions actions
                :invarients invarients}]
     `(def ~name (automaton ~spec#))))

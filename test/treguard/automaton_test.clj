@@ -2,33 +2,36 @@
   (:require [treguard.automaton :refer :all]
             [midje.sweet :refer :all]))
 
-(defaction send-m :in [:m]
-  (fn [{:keys [m]} state]
-    (update-in state [:queue] conj m)))
+(defaction send-m :in [m src dst]
+  (update-in state [:queue] conj m))
 
-(defaction recieve-m :out [:m]
-  (fn [{:keys [queue]} args]
-    (when-let [m (peek queue)]
-      [{:m m}]))
-  (fn [{:keys [m]} state]
-    (update-in state [:queue] pop)))
+(defaction recieve-m :out [m src dst]
+  (when-let [m (peek (:queue state))]
+    {:m m})
+  (update-in state [:queue] pop))
 
-(defauto channel []
-  {:queue clojure.lang.PersistentQueue/EMPTY}
-  [send-m recieve-m]
+(defauto channel
+  ([src dst]
+     {:src src
+      :dst dst
+      :queue clojure.lang.PersistentQueue/EMPTY})
+  [send-m
+   recieve-m]
   [])
 
 (facts "About a channel"
        (fact "A channel is an automaton"
              (automaton? channel) => true)
-       (let [state (init channel [])]
+       (let [state (init channel [:a :b])]
          (fact "We can initialise a channel"
                state => map?)
          (fact "A new channel is valid"
                (valid? channel state) => true)
          (fact "A new channel has no enabled tasks"
                (tasks channel nil state) => empty?)
-         (let [ts (tasks channel [:send-m 0] state)]
+         (fact "Sending an unmatched input enables no tasks"
+               (tasks channel [:send-m 0 :b :a] state) => empty?)
+         (let [ts (tasks channel [:send-m 0 :a :b] state)]
            (fact "An input message enables the send input task"
                  (count ts) => 1
                  (-> ts first :action :name) => :send-m
@@ -53,8 +56,10 @@
                  (fact "The new state is valid"
                    (valid? channel state'') => true)
                  (fact "Executing the task returns the recieve message"
-                       m => [:recieve-m 0])))
-             (let [ts (tasks channel [:send-m 1] state')]
+                       m => [:recieve-m 0 :a :b])
+                 (fact "The resulting state has no enabled tasks"
+                       (tasks channel nil state'') => empty?)))
+             (let [ts (tasks channel [:send-m 1 :a :b] state')]
                (fact "Sending another message enables 2 tasks"
                      (count ts) => 2
                      (map #(get-in % [:action :name]) ts) => (contains [:send-m :recieve-m] :in-any-order)
