@@ -139,6 +139,10 @@
   {:pre [(task? task)]}
   (-exec task))
 
+(defn aname
+  [task]
+  (get-in task [:action :name]))
+
 (defmacro defaction
   [name type args & body]
   (let [[pred effect] (if (= type :in)
