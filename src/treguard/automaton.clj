@@ -19,10 +19,16 @@
                       count)]
       (zero? failed)))
   (-tasks [_ input state]
-    (keep (fn [action]
-            (when-let [env (enable action input state)]
-              (task action env state)))
-          actions)))
+    (let [tasks (keep (fn [action]
+                        (when-let [env (enable action input state)]
+                          (task action env state)))
+                      actions)
+          inputs (filter (fn [task]
+                           (= :in (get-in task [:action :type])))
+                         tasks)]
+      (if (and input (pos? (count inputs)))
+        inputs
+        tasks))))
 
 (defn automaton
   [{:keys [name constructor actions invarients] :as spec}]

@@ -60,7 +60,7 @@
                  (fact "The resulting state has no enabled tasks"
                        (tasks channel nil state'') => empty?)))
              (let [ts (tasks channel [:send-m 1 :a :b] state')]
-               (fact "Sending another message enables 2 tasks"
-                     (count ts) => 2
-                     (map #(get-in % [:action :name]) ts) => (contains [:send-m :recieve-m] :in-any-order)
-                     (map #(get-in % [:action :type]) ts) => (contains [:in :out] :in-any-order)))))))
+               (fact "Sending another message enables just the send task"
+                     (count ts) => 1
+                     (map #(get-in % [:action :name]) ts) => (contains [:send-m])
+                     (map #(get-in % [:action :type]) ts) => (contains [:in])))))))
