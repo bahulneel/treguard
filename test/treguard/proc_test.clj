@@ -13,9 +13,9 @@
     (and (pos? x)
          (pos? y)
          (= x y)))
-  (assoc state
-    :x 0
-    :y 0))
+  (-> state
+      (assoc :x 0)
+      (assoc :y 0)))
 
 (a/defaction step-x :int [x y]
   (and (pos? x)
