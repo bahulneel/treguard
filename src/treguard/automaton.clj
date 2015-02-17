@@ -62,7 +62,9 @@
     (let [env (into {} (map (juxt identity (partial get state)) args))]
       (if pred
         (when-let [env' (pred env state)]
-          (merge env env'))
+          (if (true? env')
+            env
+            (merge env env')))
         (when (and input (= :in type))
           (let [[iname & iargs] input
                 env' (zipmap args iargs)]
@@ -75,7 +77,7 @@
                             (every? nil?)))
               env'))))))
   (-run [_ env state]
-    (let [msg (when-not (= :in type)
+    (let [msg (when (= :out type)
                 (reduce (fn [m arg]
                           (conj m (arg env)))
                         [name]

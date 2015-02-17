@@ -22,7 +22,7 @@
   [a & args]
   {:pre [(a/automaton? a)]}
   (let [state (a/init a args)]
-    (->Proc state automaton nil)))
+    (->Proc state a {} nil)))
 
 (defn run
   [proc input]
